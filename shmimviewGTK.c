@@ -225,204 +225,204 @@ int update_pic(gpointer ptr) {
 
         //id->zoomFact = 1.0 * id->xsize / (id->x1view - id->x0view);
 
-		
-		if( id->streamimage->md[0].atype -= _DATATYPE_FLOAT )
-		{
 
-        int xview, yview; // view window coordinates
-        for (yview = 0; yview < id->viewYsize; yview++)
-            for (xview = 0; xview < id->viewXsize; xview++)
-            {
-                float pixval;
-                int ii, jj;
-                int pixsat = 0;
+        if( id->streamimage->md[0].atype == _DATATYPE_FLOAT )
+        {
 
-                guchar rval, gval, bval;
-
-
-                ii = (int) (0.5 + id->x0view + xview / id->zoomFact );
-                jj = (int) (0.5 + id->y0view + yview / id->zoomFact );
-
-                pixval = id->streamimage->array.F[ jj*id->xsize + ii ];
-
-                pixval = (pixval - id->vmin) / (id->vmax - id->vmin);
-
-                PixVal_to_RGB(pixval, &rval,&gval, &bval, ptr);
-
-                if( (ii==id->iisel) && (jj==id->jjsel) )
+            int xview, yview; // view window coordinates
+            for (yview = 0; yview < id->viewYsize; yview++)
+                for (xview = 0; xview < id->viewXsize; xview++)
                 {
-                    rval = 0;
-                    gval = 255;
-                    bval = 0;
+                    float pixval;
+                    int ii, jj;
+                    int pixsat = 0;
+
+                    guchar rval, gval, bval;
+
+
+                    ii = (int) (0.5 + id->x0view + xview / id->zoomFact );
+                    jj = (int) (0.5 + id->y0view + yview / id->zoomFact );
+
+                    pixval = id->streamimage->array.F[ jj*id->xsize + ii ];
+
+                    pixval = (pixval - id->vmin) / (id->vmax - id->vmin);
+
+                    PixVal_to_RGB(pixval, &rval,&gval, &bval, ptr);
+
+                    if( (ii==id->iisel) && (jj==id->jjsel) )
+                    {
+                        rval = 0;
+                        gval = 255;
+                        bval = 0;
+                    }
+
+
+                    int pixindex = yview * id->stride + xview * BYTES_PER_PIXEL;
+                    array[pixindex] = rval;
+                    array[pixindex+1] = gval;
+                    array[pixindex+2] = bval;
+
                 }
+        }
 
 
-                int pixindex = yview * id->stride + xview * BYTES_PER_PIXEL;
-                array[pixindex] = rval;
-                array[pixindex+1] = gval;
-                array[pixindex+2] = bval;
+        if( id->streamimage->md[0].atype == _DATATYPE_UINT16 )
+        {
 
-            }
-		}
-		
-		
-		if( id->streamimage->md[0].atype -= _DATATYPE_UINT16 )
-		{
-
-        int xview, yview; // view window coordinates
-        for (yview = 0; yview < id->viewYsize; yview++)
-            for (xview = 0; xview < id->viewXsize; xview++)
-            {
-                float pixval;
-                int ii, jj;
-                int pixsat = 0;
-
-                guchar rval, gval, bval;
-
-
-                ii = (int) (0.5 + id->x0view + xview / id->zoomFact );
-                jj = (int) (0.5 + id->y0view + yview / id->zoomFact );
-
-                pixval = id->streamimage->array.UI16[ jj*id->xsize + ii ];
-
-                pixval = (pixval - id->vmin) / (id->vmax - id->vmin);
-
-                PixVal_to_RGB(pixval, &rval,&gval, &bval, ptr);
-
-                if( (ii==id->iisel) && (jj==id->jjsel) )
+            int xview, yview; // view window coordinates
+            for (yview = 0; yview < id->viewYsize; yview++)
+                for (xview = 0; xview < id->viewXsize; xview++)
                 {
-                    rval = 0;
-                    gval = 255;
-                    bval = 0;
+                    float pixval;
+                    int ii, jj;
+                    int pixsat = 0;
+
+                    guchar rval, gval, bval;
+
+
+                    ii = (int) (0.5 + id->x0view + xview / id->zoomFact );
+                    jj = (int) (0.5 + id->y0view + yview / id->zoomFact );
+
+                    pixval = id->streamimage->array.UI16[ jj*id->xsize + ii ];
+
+                    pixval = (pixval - id->vmin) / (id->vmax - id->vmin);
+
+                    PixVal_to_RGB(pixval, &rval,&gval, &bval, ptr);
+
+                    if( (ii==id->iisel) && (jj==id->jjsel) )
+                    {
+                        rval = 0;
+                        gval = 255;
+                        bval = 0;
+                    }
+
+
+                    int pixindex = yview * id->stride + xview * BYTES_PER_PIXEL;
+                    array[pixindex] = rval;
+                    array[pixindex+1] = gval;
+                    array[pixindex+2] = bval;
+
                 }
+        }
 
+        if( id->streamimage->md[0].atype == _DATATYPE_UINT32 )
+        {
 
-                int pixindex = yview * id->stride + xview * BYTES_PER_PIXEL;
-                array[pixindex] = rval;
-                array[pixindex+1] = gval;
-                array[pixindex+2] = bval;
-
-            }
-		}
-		
-		if( id->streamimage->md[0].atype -= _DATATYPE_UINT32 )
-		{
-
-        int xview, yview; // view window coordinates
-        for (yview = 0; yview < id->viewYsize; yview++)
-            for (xview = 0; xview < id->viewXsize; xview++)
-            {
-                float pixval;
-                int ii, jj;
-                int pixsat = 0;
-
-                guchar rval, gval, bval;
-
-
-                ii = (int) (0.5 + id->x0view + xview / id->zoomFact );
-                jj = (int) (0.5 + id->y0view + yview / id->zoomFact );
-
-                pixval = id->streamimage->array.UI32[ jj*id->xsize + ii ];
-
-                pixval = (pixval - id->vmin) / (id->vmax - id->vmin);
-
-                PixVal_to_RGB(pixval, &rval,&gval, &bval, ptr);
-
-                if( (ii==id->iisel) && (jj==id->jjsel) )
+            int xview, yview; // view window coordinates
+            for (yview = 0; yview < id->viewYsize; yview++)
+                for (xview = 0; xview < id->viewXsize; xview++)
                 {
-                    rval = 0;
-                    gval = 255;
-                    bval = 0;
+                    float pixval;
+                    int ii, jj;
+                    int pixsat = 0;
+
+                    guchar rval, gval, bval;
+
+
+                    ii = (int) (0.5 + id->x0view + xview / id->zoomFact );
+                    jj = (int) (0.5 + id->y0view + yview / id->zoomFact );
+
+                    pixval = id->streamimage->array.UI32[ jj*id->xsize + ii ];
+
+                    pixval = (pixval - id->vmin) / (id->vmax - id->vmin);
+
+                    PixVal_to_RGB(pixval, &rval,&gval, &bval, ptr);
+
+                    if( (ii==id->iisel) && (jj==id->jjsel) )
+                    {
+                        rval = 0;
+                        gval = 255;
+                        bval = 0;
+                    }
+
+
+                    int pixindex = yview * id->stride + xview * BYTES_PER_PIXEL;
+                    array[pixindex] = rval;
+                    array[pixindex+1] = gval;
+                    array[pixindex+2] = bval;
+
                 }
+        }
 
 
-                int pixindex = yview * id->stride + xview * BYTES_PER_PIXEL;
-                array[pixindex] = rval;
-                array[pixindex+1] = gval;
-                array[pixindex+2] = bval;
 
-            }
-		}
-		
+        if( id->streamimage->md[0].atype == _DATATYPE_INT16 )
+        {
 
-		
-		if( id->streamimage->md[0].atype -= _DATATYPE_INT16 )
-		{
-
-        int xview, yview; // view window coordinates
-        for (yview = 0; yview < id->viewYsize; yview++)
-            for (xview = 0; xview < id->viewXsize; xview++)
-            {
-                float pixval;
-                int ii, jj;
-                int pixsat = 0;
-
-                guchar rval, gval, bval;
-
-
-                ii = (int) (0.5 + id->x0view + xview / id->zoomFact );
-                jj = (int) (0.5 + id->y0view + yview / id->zoomFact );
-
-                pixval = id->streamimage->array.SI16[ jj*id->xsize + ii ];
-
-                pixval = (pixval - id->vmin) / (id->vmax - id->vmin);
-
-                PixVal_to_RGB(pixval, &rval,&gval, &bval, ptr);
-
-                if( (ii==id->iisel) && (jj==id->jjsel) )
+            int xview, yview; // view window coordinates
+            for (yview = 0; yview < id->viewYsize; yview++)
+                for (xview = 0; xview < id->viewXsize; xview++)
                 {
-                    rval = 0;
-                    gval = 255;
-                    bval = 0;
+                    float pixval;
+                    int ii, jj;
+                    int pixsat = 0;
+
+                    guchar rval, gval, bval;
+
+
+                    ii = (int) (0.5 + id->x0view + xview / id->zoomFact );
+                    jj = (int) (0.5 + id->y0view + yview / id->zoomFact );
+
+                    pixval = id->streamimage->array.SI16[ jj*id->xsize + ii ];
+
+                    pixval = (pixval - id->vmin) / (id->vmax - id->vmin);
+
+                    PixVal_to_RGB(pixval, &rval,&gval, &bval, ptr);
+
+                    if( (ii==id->iisel) && (jj==id->jjsel) )
+                    {
+                        rval = 0;
+                        gval = 255;
+                        bval = 0;
+                    }
+
+
+                    int pixindex = yview * id->stride + xview * BYTES_PER_PIXEL;
+                    array[pixindex] = rval;
+                    array[pixindex+1] = gval;
+                    array[pixindex+2] = bval;
+
                 }
+        }
 
+        if( id->streamimage->md[0].atype == _DATATYPE_INT32 )
+        {
 
-                int pixindex = yview * id->stride + xview * BYTES_PER_PIXEL;
-                array[pixindex] = rval;
-                array[pixindex+1] = gval;
-                array[pixindex+2] = bval;
-
-            }
-		}
-		
-		if( id->streamimage->md[0].atype -= _DATATYPE_INT32 )
-		{
-
-        int xview, yview; // view window coordinates
-        for (yview = 0; yview < id->viewYsize; yview++)
-            for (xview = 0; xview < id->viewXsize; xview++)
-            {
-                float pixval;
-                int ii, jj;
-                int pixsat = 0;
-
-                guchar rval, gval, bval;
-
-
-                ii = (int) (0.5 + id->x0view + xview / id->zoomFact );
-                jj = (int) (0.5 + id->y0view + yview / id->zoomFact );
-
-                pixval = id->streamimage->array.SI32[ jj*id->xsize + ii ];
-
-                pixval = (pixval - id->vmin) / (id->vmax - id->vmin);
-
-                PixVal_to_RGB(pixval, &rval,&gval, &bval, ptr);
-
-                if( (ii==id->iisel) && (jj==id->jjsel) )
+            int xview, yview; // view window coordinates
+            for (yview = 0; yview < id->viewYsize; yview++)
+                for (xview = 0; xview < id->viewXsize; xview++)
                 {
-                    rval = 0;
-                    gval = 255;
-                    bval = 0;
+                    float pixval;
+                    int ii, jj;
+                    int pixsat = 0;
+
+                    guchar rval, gval, bval;
+
+
+                    ii = (int) (0.5 + id->x0view + xview / id->zoomFact );
+                    jj = (int) (0.5 + id->y0view + yview / id->zoomFact );
+
+                    pixval = id->streamimage->array.SI32[ jj*id->xsize + ii ];
+
+                    pixval = (pixval - id->vmin) / (id->vmax - id->vmin);
+
+                    PixVal_to_RGB(pixval, &rval,&gval, &bval, ptr);
+
+                    if( (ii==id->iisel) && (jj==id->jjsel) )
+                    {
+                        rval = 0;
+                        gval = 255;
+                        bval = 0;
+                    }
+
+
+                    int pixindex = yview * id->stride + xview * BYTES_PER_PIXEL;
+                    array[pixindex] = rval;
+                    array[pixindex+1] = gval;
+                    array[pixindex+2] = bval;
+
                 }
-
-
-                int pixindex = yview * id->stride + xview * BYTES_PER_PIXEL;
-                array[pixindex] = rval;
-                array[pixindex+1] = gval;
-                array[pixindex+2] = bval;
-
-            }
-		}
+        }
 
 
 
@@ -432,6 +432,9 @@ int update_pic(gpointer ptr) {
 
     return TRUE;
 }
+
+
+
 
 
 
