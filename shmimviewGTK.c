@@ -743,6 +743,8 @@ static gboolean UpdateLevelscallback( GtkWidget * w, GdkEventButton * event, gpo
 
 
 
+
+
 static gboolean buttonpresscallback ( GtkWidget * w,
                                       GdkEventButton * event,
                                       gpointer *ptr )
@@ -1038,7 +1040,7 @@ int main(int argc, char **argv) {
 	char filename[64];
 	char tmpstring[100];
 	
-	float ZOOMVIEW = 1.0;
+	float ZOOMVIEW = 2.0;
 	
 	int NBIMAGES = 1;
 	imarray = (IMAGE*) malloc(sizeof(IMAGE)*NBIMAGES);
@@ -1135,8 +1137,18 @@ int main(int argc, char **argv) {
 
 
 
+	GtkCssProvider *cssProvider = gtk_css_provider_new();
+	gtk_css_provider_load_from_path(cssProvider, "theme.css", NULL);
+	gtk_style_context_add_provider_for_screen(gdk_screen_get_default(),
+                               GTK_STYLE_PROVIDER(cssProvider),
+                               GTK_STYLE_PROVIDER_PRIORITY_USER);
 
-
+	/*GtkStyleContext *context;
+    context = gtk_widget_get_style_context(la);
+	gtk_style_context_add_provider (context,
+                                    GTK_STYLE_PROVIDER(provider),
+                                    GTK_STYLE_PROVIDER_PRIORITY_USER);
+*/
 
     // OBJECTS
 
@@ -1148,7 +1160,7 @@ int main(int argc, char **argv) {
     gtk_window_set_title(GTK_WINDOW(window), "Milk Stream Image Viewer");
     gtk_widget_add_events(window, GDK_KEY_PRESS_MASK);
     gtk_window_set_default_size(GTK_WINDOW(window), 200, 200);
-    gtk_widget_add_events(GTK_WIDGET(window), GDK_CONFIGURE); // detect window resizing
+  //  gtk_widget_add_events(GTK_WIDGET(window), GDK_CONFIGURE); // detect window resizing
 
     //    gtk_window_set_default_size(GTK_WINDOW(window), COLS, ROWS);
 

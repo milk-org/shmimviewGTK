@@ -1,0 +1,92 @@
+
+* {
+	font-size: 10px;
+}
+
+
+/*
+button {
+   color: white;
+   background: #000;
+} 
+*/
+
+
+
+
+ 
+/*   
+
+GtkWindow {   
+   background-image: -gtk-gradient (linear,  
+   center top, center bottom,  
+   color-stop(0.5,green),  
+   color-stop(0.5,blue),   
+   }
+   
+
+   
+* {
+  padding: 1px;
+  -GtkCheckButton-indicator-size: 14px;
+
+  background-color: @bg_color;
+  color: @fg_color;
+
+  -Clearlooks-colorize-scrollbar: true;
+  -Clearlooks-style: classic;
+}
+
+
+
+*:hover {
+  background-color: shade (@bg_color, 0.8);
+}
+
+*:selected {
+  background-color: @selected_bg_color;
+  color: @selected_fg_color;
+}
+
+*:disabled {
+  color: shade (@bg_color, 0.7);
+}
+
+*:active {
+  background-color: shade (@bg_color, 0.9);
+}
+
+.tooltip {
+  padding: 4px;
+
+  background-color: @tooltip_bg_color;
+  color: @tooltip_fg_color;
+}
+
+
+.button {
+  padding: 3px;
+  background-color: shade (@bg_color, 1.04);
+}
+
+.button:hover {
+  background-color: shade (@bg_color, 1.06);
+}
+
+.button:active {
+  background-color: shade (@bg_color, 0.85);
+}
+
+.entry {
+  padding: 1px;
+
+  background-color: @base_color;
+  color: @text_color;
+}
+
+.entry:selected {
+  background-color: mix (@selected_bg_color, @base_color, 0.4);
+  -Clearlooks-focus-color: shade (0.65, @selected_bg_color)
+}
+
+*/
