@@ -1355,7 +1355,7 @@ int main(int argc, char **argv) {
     // note : "key-release-event"
 
     // timeout
-    g_timeout_add(33,         // milliseconds
+    g_timeout_add(100,         // milliseconds
                   update_pic,  // handler function
                   &id);        // data
 
