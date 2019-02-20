@@ -283,7 +283,7 @@ int update_pic(gpointer ptr) {
                     ii = (int) (0.5 + id->x0view + xview / id->zoomFact );
                     jj = (int) (0.5 + id->y0view + yview / id->zoomFact );
 
-                    pixval = id->streamimage->array.UI16[ jj*id->xsize + ii ];
+                    pixval = 1.0 * id->streamimage->array.UI16[ jj*id->xsize + ii ];
 
                     pixval = (pixval - id->vmin) / (id->vmax - id->vmin);
 
@@ -322,7 +322,7 @@ int update_pic(gpointer ptr) {
                     ii = (int) (0.5 + id->x0view + xview / id->zoomFact );
                     jj = (int) (0.5 + id->y0view + yview / id->zoomFact );
 
-                    pixval = id->streamimage->array.UI32[ jj*id->xsize + ii ];
+                    pixval = 1.0 * id->streamimage->array.UI32[ jj*id->xsize + ii ];
 
                     pixval = (pixval - id->vmin) / (id->vmax - id->vmin);
 
@@ -363,7 +363,7 @@ int update_pic(gpointer ptr) {
                     ii = (int) (0.5 + id->x0view + xview / id->zoomFact );
                     jj = (int) (0.5 + id->y0view + yview / id->zoomFact );
 
-                    pixval = id->streamimage->array.SI16[ jj*id->xsize + ii ];
+                    pixval = 1.0 * id->streamimage->array.SI16[ jj*id->xsize + ii ];
 
                     pixval = (pixval - id->vmin) / (id->vmax - id->vmin);
 
@@ -402,7 +402,7 @@ int update_pic(gpointer ptr) {
                     ii = (int) (0.5 + id->x0view + xview / id->zoomFact );
                     jj = (int) (0.5 + id->y0view + yview / id->zoomFact );
 
-                    pixval = id->streamimage->array.SI32[ jj*id->xsize + ii ];
+                    pixval = 1.0 * id->streamimage->array.SI32[ jj*id->xsize + ii ];
 
                     pixval = (pixval - id->vmin) / (id->vmax - id->vmin);
 
