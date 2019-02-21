@@ -389,6 +389,7 @@ int update_pic(gpointer ptr) {
 		if(id->autominmax == 1)
 		{
 			float minval, maxval;
+			char tmpstring[200];
 			
 			minval = comparray[jjmin*id->streamimage->md[0].size[0]+iimin];
 			maxval = minval;
@@ -404,6 +405,13 @@ int update_pic(gpointer ptr) {
 				}
 			id->vmin = minval;
 			id->vmax = maxval;
+			
+			
+			sprintf(tmpstring, "%.2f", id->vmin);
+			gtk_label_set_text(GTK_LABEL(id->GTKlabel_scale_vmin), tmpstring);
+
+			sprintf(tmpstring, "%.2f", id->vmax);
+			gtk_label_set_text(GTK_LABEL(id->GTKlabel_scale_vmax), tmpstring);
 		}
 
 
@@ -1150,6 +1158,8 @@ int main(int argc, char **argv) {
     id.showsaturated_max = 0;
     id.zoomFact = ZOOMVIEW;
     id.update = 1;
+    
+    id.autominmax = 1;
     
     id.button1pressed = 0;
 	id.button3pressed = 0;
