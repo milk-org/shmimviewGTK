@@ -67,6 +67,7 @@ typedef struct {
 	
 	int showsaturated_min;
 	int showsaturated_max;
+	int autominmax;
 	
 	int update;
 	
@@ -83,6 +84,7 @@ typedef struct {
 	GtkWidget *GTKentry_vmax;  // user input
 	GtkWidget *GTKlabel_scale_vmin; // current
 	GtkWidget *GTKlabel_scale_vmax; // current
+	GtkWidget *GTKcheck_autominmax;
 	GtkWidget *GTKcheck_saturation_min;
 	GtkWidget *GTKcheck_saturation_max;
 	
@@ -236,6 +238,11 @@ int update_pic(gpointer ptr) {
         fflush(stdout);
 #endif
 
+
+
+
+
+
         imcnt0 = id->streamimage->md[0].cnt0;
 
         guchar *array = gdk_pixbuf_get_pixels(pb);
@@ -377,6 +384,30 @@ int update_pic(gpointer ptr) {
 
 
         }
+
+		// Recompute min and max scale if needed
+		if(id->autominmax == 1)
+		{
+			float minval, maxval;
+			
+			minval = comparray[jjmin*id->streamimage->md[0].size[0]+iimin];
+			maxval = minval;
+			
+			for(ii=iimin; ii<iimax; ii++)
+                for(jj=jjmin; jj<jjmax; jj++)
+                {
+					float tmpval = comparray[jj*id->streamimage->md[0].size[0]+ii];
+					if(tmpval < minval)
+						minval = tmpval;
+					if(tmpval > maxval)
+						maxval = tmpval;
+				}
+			id->vmin = minval;
+			id->vmax = maxval;
+		}
+
+
+
 
 
         // compute R, G, B values
@@ -718,6 +749,9 @@ static gboolean mouse_moved(GtkWidget *widget, GdkEvent *event, gpointer ptr) {
 
 
 
+
+
+
 static gboolean UpdateLevelscallback( GtkWidget * w, GdkEventButton * event, gpointer *ptr )
 {
 	ImageData *id = (ImageData*) ptr;
@@ -740,6 +774,7 @@ static gboolean UpdateLevelscallback( GtkWidget * w, GdkEventButton * event, gpo
 	id->update = 1;
 	
 }
+
 
 
 
@@ -933,6 +968,8 @@ gboolean saturation_min_toggled_callback(GtkToggleButton *toggle_button,  gpoint
     id->update = 1;
 }
 
+
+
 gboolean saturation_max_toggled_callback(GtkToggleButton *toggle_button,  gpointer ptr)
 {
     ImageData *id = (ImageData*) ptr;
@@ -951,6 +988,30 @@ gboolean saturation_max_toggled_callback(GtkToggleButton *toggle_button,  gpoint
 #endif
     id->update = 1;
 }
+
+
+
+gboolean autominmax_toggled_callback(GtkToggleButton *toggle_button,  gpointer ptr)
+{
+    ImageData *id = (ImageData*) ptr;
+
+#ifdef VERBOSE
+    printf("AUTO MINMAX toggle\n");
+#endif
+
+    if (gtk_toggle_button_get_active (toggle_button))
+        id->autominmax = 1;
+    else
+        id->autominmax = 0;
+
+#ifdef VERBOSE
+    printf("MAX toggle = %d\n", id->autominmax);
+#endif
+    id->update = 1;
+}
+
+
+
 
 
 static void bscale_center_moved (GtkRange *range, gpointer ptr)
@@ -1233,6 +1294,7 @@ int main(int argc, char **argv) {
 	GtkWidget *GTKlabel_scale_saturation = gtk_label_new ("Saturation");
 	id.GTKcheck_saturation_min = gtk_check_button_new_with_label ("min");
 	id.GTKcheck_saturation_max = gtk_check_button_new_with_label ("max");
+	id.GTKcheck_autominmax = gtk_check_button_new_with_label ("autominmax");
 
 	id.GTKscale_bscale_slope = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 0.2, 3.0, 0.2);
 	id.GTKscale_bscale_center = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 0.0, 1.0, 0.05);
@@ -1297,12 +1359,14 @@ int main(int argc, char **argv) {
 	gtk_grid_attach (GTK_GRID (grid_brightnessscale), GTK_WIDGET(id.GTKlabel_scale_vmin),       1, 3, 1, 1);
 	gtk_grid_attach (GTK_GRID (grid_brightnessscale), GTK_WIDGET(id.GTKlabel_scale_vmax),       2, 3, 1, 1);	
 
-	gtk_grid_attach (GTK_GRID (grid_brightnessscale), GTK_WIDGET(GTKlabel_scale_saturation),    0, 4, 1, 1);
-	gtk_grid_attach (GTK_GRID (grid_brightnessscale), GTK_WIDGET(id.GTKcheck_saturation_min),   1, 4, 1, 1);
-	gtk_grid_attach (GTK_GRID (grid_brightnessscale), GTK_WIDGET(id.GTKcheck_saturation_max),   2, 4, 1, 1);
+	gtk_grid_attach (GTK_GRID (grid_brightnessscale), GTK_WIDGET(id.GTKcheck_autominmax),       0, 4, 1, 1);
 
-	gtk_grid_attach (GTK_GRID (grid_brightnessscale), GTK_WIDGET(id.GTKscale_bscale_slope),  0, 5, 3, 1); 
-	gtk_grid_attach (GTK_GRID (grid_brightnessscale), GTK_WIDGET(id.GTKscale_bscale_center), 0, 6, 3, 1);
+	gtk_grid_attach (GTK_GRID (grid_brightnessscale), GTK_WIDGET(GTKlabel_scale_saturation),    0, 5, 1, 1);
+	gtk_grid_attach (GTK_GRID (grid_brightnessscale), GTK_WIDGET(id.GTKcheck_saturation_min),   1, 5, 1, 1);
+	gtk_grid_attach (GTK_GRID (grid_brightnessscale), GTK_WIDGET(id.GTKcheck_saturation_max),   2, 5, 1, 1);
+
+	gtk_grid_attach (GTK_GRID (grid_brightnessscale), GTK_WIDGET(id.GTKscale_bscale_slope),  0, 6, 3, 1); 
+	gtk_grid_attach (GTK_GRID (grid_brightnessscale), GTK_WIDGET(id.GTKscale_bscale_center), 0, 7, 3, 1);
 
 
 
@@ -1340,7 +1404,7 @@ int main(int argc, char **argv) {
 	g_signal_connect (window, "scroll-event", G_CALLBACK (buttonscrollcallback), &id );
 
 
-
+	g_signal_connect (GTK_TOGGLE_BUTTON (id.GTKcheck_autominmax), "toggled", G_CALLBACK (autominmax_toggled_callback), &id);
 
 	g_signal_connect (buttonUpdateLevels, "button-press-event", G_CALLBACK (UpdateLevelscallback), &id );
 	g_signal_connect (GTK_TOGGLE_BUTTON (id.GTKcheck_saturation_min), "toggled", G_CALLBACK (saturation_min_toggled_callback), &id);

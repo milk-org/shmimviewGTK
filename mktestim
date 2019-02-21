@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# Create test shared memory image for testing purposes
+
+milk << EOF
+mkdisk d1 256 256 100 200 30
+mkdisk d2 256 256 150 180 40
+mkgauss g1 256 256 30 1.0
+im1=d1+d2+g1
+creaimshm ims1 256 256
+cpsh im1 ims1
+exitCLI
+EOF
+
