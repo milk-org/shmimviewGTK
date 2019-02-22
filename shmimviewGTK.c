@@ -37,49 +37,49 @@ typedef struct {
 	float vmin, vmax;                           // min and max scale vales
 	float bscale_slope;
 	float bscale_center;
-	
+
 	// colorbar
 	GtkImage *gtkimage_colorbar;
 	int colorbar_height;
 	int stride_colorbar;
-	
+
 	// mouse
 	float mouseXpos, mouseYpos;                             // current mouse coord (in image pix units)
 	int iisel, jjsel;                                       // selected pixel
 
-	int button1pressed;                                     // is button 1 pressed 
+	int button1pressed;                                     // is button 1 pressed
 	float mouseXpos_pressed1, mouseYpos_pressed1;           // coordinates last time button 1 pressed (in image pix units)
 	float mouseXpos_pressed1_view, mouseYpos_pressed1_view; // coordinates last time button 1 pressed (in view pix units)
-	
+
 	float x0view_ref, y0view_ref;
 	float x1view_ref, y1view_ref;
 
 
-	int button3pressed;                                     // is button 1 pressed 
+	int button3pressed;                                     // is button 1 pressed
 	float mouseXpos_pressed3, mouseYpos_pressed3;           // coordinates last time button 1 pressed (in image pix units)
 	float mouseXpos_pressed3_view, mouseYpos_pressed3_view; // coordinates last time button 1 pressed (in view pix units)
 
 	float bscale_center_ref;
 	float bscale_slope_ref;
-	
-	
-	
-	
+
+
+
+
 	int showsaturated_min;
 	int showsaturated_max;
 	int autominmax;
-	
+
 	int update;
-	
+
 	// widgets
 	GtkWidget *GTKlabelxcoord;
 	GtkWidget *GTKlabelycoord;
 	GtkWidget *GTKlabelpixval;
-	
+
 	GtkWidget *GTKlabelxview;
 	GtkWidget *GTKlabelyview;
 	GtkWidget *GTKlabelzoom;
-	
+
 	GtkWidget *GTKentry_vmin;  // user input
 	GtkWidget *GTKentry_vmax;  // user input
 	GtkWidget *GTKlabel_scale_vmin; // current
@@ -87,17 +87,17 @@ typedef struct {
 	GtkWidget *GTKcheck_autominmax;
 	GtkWidget *GTKcheck_saturation_min;
 	GtkWidget *GTKcheck_saturation_max;
-	
+
 	GtkWidget *GTKscale_bscale_slope;
 	GtkWidget *GTKscale_bscale_center;
-	
+
 } ImageData;
 
 
 
 
- 
- 
+
+
 void free_pixels(guchar *pixels, gpointer data) {
     free(pixels);
 }
@@ -114,13 +114,13 @@ void PixVal_to_RGB(float pixval, guchar *rval, guchar *gval, guchar *bval, gpoin
 {
     float pixval1;
 	int pixsat = 0;
-	
+
 	ImageData *id = (ImageData*)ptr;
-	
-	
-	
-	
-	
+
+
+
+
+
     pixval1 = id->bscale_center + (pixval-id->bscale_center) * id->bscale_slope;
 
 
@@ -154,7 +154,7 @@ void PixVal_to_RGB(float pixval, guchar *rval, guchar *gval, guchar *bval, gpoin
         *rval = (unsigned char) (pixval1*255);
         *gval = (unsigned char) (pixval1*255);
         *bval = (unsigned char) (pixval1*255);
-    }	
+    }
 }
 
 
@@ -169,33 +169,33 @@ int update_pic_colorbar(gpointer ptr)
 	ImageData *id = (ImageData*)ptr;
 	GdkPixbuf *pb = gtk_image_get_pixbuf(id->gtkimage_colorbar);
 	guchar rval, gval, bval;
-	
+
 	guchar *array = gdk_pixbuf_get_pixels(pb);
-	
+
 	int ii, jj;
 	for(ii=0; ii < id->viewXsize; ii++)
 		{
 			for(jj=0; jj < id->colorbar_height; jj++)
 			{
 				float pixval;
-				
+
 				pixval = 1.0*ii/id->viewXsize;
 				PixVal_to_RGB(pixval, &rval, &gval, &bval, ptr);
-				
+
 				int pixindex = jj * id->stride_colorbar + ii * BYTES_PER_PIXEL;
-				
+
 				#ifdef VERBOSE
 				printf(" %3d / %3d   %3d / %3d  (%d) %d   %f ->  %d %d %d\n", ii, id->viewXsize, jj, id->colorbar_height, id->stride_colorbar, pixindex, pixval, rval, gval, bval);
 				fflush(stdout);
 				#endif
-				
+
                 array[pixindex] = rval;
 				array[pixindex+1] = gval;
 				array[pixindex+2] = bval;
 			}
 		}
 	gtk_image_set_from_pixbuf(GTK_IMAGE(id->gtkimage_colorbar), pb);
-	
+
 }
 
 
@@ -244,6 +244,20 @@ int update_pic(gpointer ptr) {
 
 
         imcnt0 = id->streamimage->md[0].cnt0;
+        int imXsize = 0;
+        int imYsize = 0;
+        int imid = 0;
+
+        if( id->streamimage->md[0].naxis == 2) {
+          imXsize = id->streamimage->md[0].size[0];
+        	imYsize = id->streamimage->md[0].size[1];
+          imid = 0;
+        } else if( id->streamimage->md[0].naxis == 3) {
+          imXsize = id->streamimage->md[0].size[1];
+        	imYsize = id->streamimage->md[0].size[2];
+          imid = imcnt0 % id->streamimage->md[0].size[0];
+        }
+        int imSize = imXsize*imYsize;
 
         guchar *array = gdk_pixbuf_get_pixels(pb);
 
@@ -256,23 +270,23 @@ int update_pic(gpointer ptr) {
         int iimax = (long) (0.5 + id->x0view + id->viewXsize / id->zoomFact) + 1;
         if (iimin < 0)
             iimin = 0;
-        if (iimax > id->streamimage->md[0].size[0]-1 )
-            iimax = id->streamimage->md[0].size[0];
+        if (iimax > imXsize-1 )
+            iimax = imXsize;
 
         int jjmin = (long) (0.5 + id->y0view);
         int jjmax = (long) (0.5 + id->y0view + id->viewYsize / id->zoomFact) + 1;
         if (jjmin < 0)
             jjmin = 0;
-        if (jjmax > id->streamimage->md[0].size[1]-1 )
-            jjmax = id->streamimage->md[0].size[1];
+        if (jjmax > imYsize-1 )
+            jjmax = imYsize;
 
 
         if(comparrayinit==0)
         {
-            comparray = (float*) malloc(sizeof(float) * id->streamimage->md[0].size[0] * id->streamimage->md[0].size[1]);
-            Rarray = (guchar*) malloc(sizeof(guchar) * id->streamimage->md[0].size[0] * id->streamimage->md[0].size[1]);
-            Garray = (guchar*) malloc(sizeof(guchar) * id->streamimage->md[0].size[0] * id->streamimage->md[0].size[1]);
-            Barray = (guchar*) malloc(sizeof(guchar) * id->streamimage->md[0].size[0] * id->streamimage->md[0].size[1]);
+            comparray = (float*) malloc(sizeof(float) * imSize);
+            Rarray = (guchar*) malloc(sizeof(guchar) * imSize);
+            Garray = (guchar*) malloc(sizeof(guchar) * imSize);
+            Barray = (guchar*) malloc(sizeof(guchar) * imSize);
             PixelRaw_array = (long*) malloc(sizeof(long) * id->viewXsize * id->viewYsize);
             PixelBuff_array = (int*) malloc(sizeof(int) * id->viewXsize * id->viewYsize);
             comparrayinit = 1;
@@ -303,7 +317,7 @@ int update_pic(gpointer ptr) {
                     jj = (int) (0.5 + id->y0view + yview / id->zoomFact );
 
                     pixindexView = yview * id->viewXsize + xview;
-                    pixindexRaw = jj*id->streamimage->md[0].size[0]+ii;
+                    pixindexRaw = jj*imXsize+ii;
                     pixindexBuff = yview * id->stride + xview * BYTES_PER_PIXEL;
                     PixelRaw_array[pixindexView] = pixindexRaw;
                     PixelBuff_array[pixindexView] = pixindexBuff;
@@ -324,62 +338,62 @@ int update_pic(gpointer ptr) {
 			case _DATATYPE_FLOAT:
             for(ii=iimin; ii<iimax; ii++)
                 for(jj=jjmin; jj<jjmax; jj++)
-                    comparray[jj*id->streamimage->md[0].size[0]+ii] = id->streamimage->array.F[jj*id->streamimage->md[0].size[0]+ii];
+                    comparray[jj*imXsize+ii] = id->streamimage->array.F[imid*imSize+jj*imXsize+ii];
             break;
 
 			case _DATATYPE_DOUBLE:
             for(ii=iimin; ii<iimax; ii++)
                 for(jj=jjmin; jj<jjmax; jj++)
-                    comparray[jj*id->streamimage->md[0].size[0]+ii] = id->streamimage->array.D[jj*id->streamimage->md[0].size[0]+ii];
+                    comparray[jj*imXsize+ii] = id->streamimage->array.D[imid*imSize+jj*imXsize+ii];
             break;
 
 			case _DATATYPE_UINT8:
             for(ii=iimin; ii<iimax; ii++)
                 for(jj=jjmin; jj<jjmax; jj++)
-                    comparray[jj*id->streamimage->md[0].size[0]+ii] = (float) id->streamimage->array.UI8[jj*id->streamimage->md[0].size[0]+ii];
+                    comparray[jj*imXsize+ii] = (float) id->streamimage->array.UI8[imid*imSize+jj*imXsize+ii];
             break;
 
 			case _DATATYPE_UINT16:
             for(ii=iimin; ii<iimax; ii++)
                 for(jj=jjmin; jj<jjmax; jj++)
-                    comparray[jj*id->streamimage->md[0].size[0]+ii] = (float) id->streamimage->array.UI16[jj*id->streamimage->md[0].size[0]+ii];
+                    comparray[jj*imXsize+ii] = (float) id->streamimage->array.UI16[imid*imSize+jj*imXsize+ii];
             break;
 
 			case _DATATYPE_UINT32:
             for(ii=iimin; ii<iimax; ii++)
                 for(jj=jjmin; jj<jjmax; jj++)
-                    comparray[jj*id->streamimage->md[0].size[0]+ii] = (float) id->streamimage->array.UI32[jj*id->streamimage->md[0].size[0]+ii];
+                    comparray[jj*imXsize+ii] = (float) id->streamimage->array.UI32[imid*imSize+jj*imXsize+ii];
             break;
 
 			case _DATATYPE_UINT64:
             for(ii=iimin; ii<iimax; ii++)
                 for(jj=jjmin; jj<jjmax; jj++)
-                    comparray[jj*id->streamimage->md[0].size[0]+ii] = (float) id->streamimage->array.UI64[jj*id->streamimage->md[0].size[0]+ii];
+                    comparray[jj*imXsize+ii] = (float) id->streamimage->array.UI64[imid*imSize+jj*imXsize+ii];
             break;
 
 
 			case _DATATYPE_INT8:
             for(ii=iimin; ii<iimax; ii++)
                 for(jj=jjmin; jj<jjmax; jj++)
-                    comparray[jj*id->streamimage->md[0].size[0]+ii] = (float) id->streamimage->array.SI8[jj*id->streamimage->md[0].size[0]+ii];
+                    comparray[jj*imXsize+ii] = (float) id->streamimage->array.SI8[imid*imSize+jj*imXsize+ii];
             break;
 
 			case _DATATYPE_INT16:
             for(ii=iimin; ii<iimax; ii++)
                 for(jj=jjmin; jj<jjmax; jj++)
-                    comparray[jj*id->streamimage->md[0].size[0]+ii] = (float) id->streamimage->array.SI16[jj*id->streamimage->md[0].size[0]+ii];
+                    comparray[jj*imXsize+ii] = (float) id->streamimage->array.SI16[imid*imSize+jj*imXsize+ii];
             break;
 
 			case _DATATYPE_INT32:
             for(ii=iimin; ii<iimax; ii++)
                 for(jj=jjmin; jj<jjmax; jj++)
-                    comparray[jj*id->streamimage->md[0].size[0]+ii] = (float) id->streamimage->array.SI32[jj*id->streamimage->md[0].size[0]+ii];
+                    comparray[jj*imXsize+ii] = (float) id->streamimage->array.SI32[imid*imSize+jj*imXsize+ii];
             break;
 
 			case _DATATYPE_INT64:
             for(ii=iimin; ii<iimax; ii++)
                 for(jj=jjmin; jj<jjmax; jj++)
-                    comparray[jj*id->streamimage->md[0].size[0]+ii] = (float) id->streamimage->array.SI64[jj*id->streamimage->md[0].size[0]+ii];
+                    comparray[jj*imXsize+ii] = (float) id->streamimage->array.SI64[imid*imSize+jj*imXsize+ii];
             break;
 
 
@@ -390,14 +404,14 @@ int update_pic(gpointer ptr) {
 		{
 			float minval, maxval;
 			char tmpstring[200];
-			
-			minval = comparray[jjmin*id->streamimage->md[0].size[0]+iimin];
+
+			minval = comparray[jjmin*imXsize+iimin];
 			maxval = minval;
-			
+
 			for(ii=iimin; ii<iimax; ii++)
                 for(jj=jjmin; jj<jjmax; jj++)
                 {
-					float tmpval = comparray[jj*id->streamimage->md[0].size[0]+ii];
+					float tmpval = comparray[jj*imXsize+ii];
 					if(tmpval < minval)
 						minval = tmpval;
 					if(tmpval > maxval)
@@ -405,8 +419,8 @@ int update_pic(gpointer ptr) {
 				}
 			id->vmin = minval;
 			id->vmax = maxval;
-			
-			
+
+
 			sprintf(tmpstring, "%.2f", id->vmin);
 			gtk_label_set_text(GTK_LABEL(id->GTKlabel_scale_vmin), tmpstring);
 
@@ -419,7 +433,7 @@ int update_pic(gpointer ptr) {
 
 
         // compute R, G, B values
-        for (ii=0; ii<id->streamimage->md[0].size[0]*id->streamimage->md[0].size[1]; ii++)
+        for (ii=0; ii<imYsize*imXsize; ii++)
         {
             Rarray[ii] = 0;
             Garray[ii] = 0;
@@ -431,7 +445,7 @@ int update_pic(gpointer ptr) {
                 float pixval;
                 int pixindex;
 
-                pixindex = jj*id->streamimage->md[0].size[0]+ii;
+                pixindex = jj*imXsize+ii;
                 pixval = comparray[pixindex];
                 pixval = (pixval - id->vmin) / (id->vmax - id->vmin);
 
@@ -554,15 +568,15 @@ int viewWindow_check_values(ImageData *id)
 
 
 	// Change bounds as needed
-	
+
 	if(id->x0view < 0)
 		id->x0view = 0;
 	if(id->y0view < 0)
 		id->y0view = 0;
-	
-	
-	
-	
+
+
+
+
 
 
 	// Recompute zoom
@@ -590,7 +604,7 @@ int viewWindow_check_values(ImageData *id)
     gtk_label_set_text(GTK_LABEL(id->GTKlabelxview), labeltext);
     sprintf(labeltext, "%8.2f - %8.2f", id->y0view, id->y1view);
     gtk_label_set_text(GTK_LABEL(id->GTKlabelyview), labeltext);
-    
+
     return 0;
 }
 
@@ -612,7 +626,7 @@ static gboolean button_press_callback (GtkWidget      *event_box,
   // that may be connected). Return FALSE to continue invoking callbacks.
   return TRUE;
 }
- 
+
 
 
 
@@ -654,55 +668,55 @@ static gboolean mouse_moved(GtkWidget *widget, GdkEvent *event, gpointer ptr) {
                 gtk_label_set_text(GTK_LABEL(id->GTKlabelxcoord), labeltext);
                 sprintf(labeltext, "%5d", jj);
                 gtk_label_set_text(GTK_LABEL(id->GTKlabelycoord), labeltext);
-                
+
                 switch ( id->streamimage[0].md[0].atype ) {
-					
-					case _DATATYPE_FLOAT :            
+
+					case _DATATYPE_FLOAT :
 					sprintf(labeltext, "%18f", id->streamimage[0].array.F[jj*id->xsize+ii]);
 					break;
-					
-					case _DATATYPE_DOUBLE :            
+
+					case _DATATYPE_DOUBLE :
 					sprintf(labeltext, "%18f", id->streamimage[0].array.D[jj*id->xsize+ii]);
 					break;
 
-					case _DATATYPE_UINT8 :            
+					case _DATATYPE_UINT8 :
 					sprintf(labeltext, "%ld", (long) id->streamimage[0].array.UI8[jj*id->xsize+ii]);
 					break;
 
-					case _DATATYPE_UINT16 :            
+					case _DATATYPE_UINT16 :
 					sprintf(labeltext, "%ld", (long) id->streamimage[0].array.UI16[jj*id->xsize+ii]);
 					break;
 
-					case _DATATYPE_UINT32 :            
+					case _DATATYPE_UINT32 :
 					sprintf(labeltext, "%ld", (long) id->streamimage[0].array.UI32[jj*id->xsize+ii]);
 					break;
 
-					case _DATATYPE_UINT64 :            
+					case _DATATYPE_UINT64 :
 					sprintf(labeltext, "%ld", (long) id->streamimage[0].array.UI64[jj*id->xsize+ii]);
 					break;
 
-					case _DATATYPE_INT8 :            
+					case _DATATYPE_INT8 :
 					sprintf(labeltext, "%ld", (long) id->streamimage[0].array.SI8[jj*id->xsize+ii]);
 					break;
 
-					case _DATATYPE_INT16 :            
+					case _DATATYPE_INT16 :
 					sprintf(labeltext, "%ld", (long) id->streamimage[0].array.SI16[jj*id->xsize+ii]);
 					break;
 
-					case _DATATYPE_INT32 :            
+					case _DATATYPE_INT32 :
 					sprintf(labeltext, "%ld", (long) id->streamimage[0].array.SI32[jj*id->xsize+ii]);
 					break;
 
-					case _DATATYPE_INT64 :            
+					case _DATATYPE_INT64 :
 					sprintf(labeltext, "%ld", (long) id->streamimage[0].array.SI64[jj*id->xsize+ii]);
 					break;
-					
+
 					default :
 					sprintf(labeltext, "ERR DATATYPE");
 					break;
 				}
-					
-                
+
+
                 gtk_label_set_text(GTK_LABEL(id->GTKlabelpixval), labeltext);
             }
 
@@ -728,10 +742,10 @@ static gboolean mouse_moved(GtkWidget *widget, GdkEvent *event, gpointer ptr) {
 
                 dragx = 1.0*e->x - id->mouseXpos_pressed3_view;
                 dragy = 1.0*e->y - id->mouseYpos_pressed3_view;
-                
+
                 id->bscale_center = id->bscale_center_ref + dragx / id->viewXsize;
 				id->bscale_slope = id->bscale_slope_ref + dragy / id->viewYsize;
-				
+
 				gtk_range_set_value (GTK_RANGE(id->GTKscale_bscale_slope), id->bscale_slope);
 				gtk_range_set_value (GTK_RANGE(id->GTKscale_bscale_center), id->bscale_center);
             }
@@ -763,24 +777,24 @@ static gboolean mouse_moved(GtkWidget *widget, GdkEvent *event, gpointer ptr) {
 static gboolean UpdateLevelscallback( GtkWidget * w, GdkEventButton * event, gpointer *ptr )
 {
 	ImageData *id = (ImageData*) ptr;
-	
+
 	#ifdef VERBOSE
 	printf("Update levels\n");
 	#endif
-	
+
 	char tmpstring[100];
 
 	id->vmin = atof(gtk_entry_get_text(GTK_ENTRY(id->GTKentry_vmin)));
 	id->vmax = atof(gtk_entry_get_text(GTK_ENTRY(id->GTKentry_vmax)));
-	
+
 	sprintf(tmpstring, "%.2f", id->vmin);
 	gtk_label_set_text(GTK_LABEL(id->GTKlabel_scale_vmin), tmpstring);
 
 	sprintf(tmpstring, "%.2f", id->vmax);
 	gtk_label_set_text(GTK_LABEL(id->GTKlabel_scale_vmax), tmpstring);
-	
+
 	id->update = 1;
-	
+
 }
 
 
@@ -793,41 +807,41 @@ static gboolean buttonpresscallback ( GtkWidget * w,
                                       gpointer *ptr )
 {
 	ImageData *id = (ImageData*) ptr;
-	
+
 	#ifdef VERBOSE
     printf ( " mousebuttonDOWN %d (x,y)=(%d,%d)state %x\n", (int)event->button, (int)event->x, (int)event->y, event->state ) ;
     #endif
-             
+
     if ( (int)event->button == 1 )
     {
 		id->button1pressed = 1;
-		
+
 		id->mouseXpos_pressed1_view = 1.0*event->x;
 		id->mouseYpos_pressed1_view = 1.0*event->y;
-		
+
 		id->mouseXpos_pressed1 = id->x0view + (1.0*event->x) / id->zoomFact;
 		id->mouseYpos_pressed1 = id->y0view + (1.0*event->y) / id->zoomFact;
-		
+
 		id->x0view_ref = id->x0view;
 		id->y0view_ref = id->y0view;
 		id->x1view_ref = id->x1view;
 		id->y1view_ref = id->y1view;
 	}
-	
+
 	if ( (int)event->button == 3 )
     {
 		id->button3pressed = 1;
-		
+
 		id->mouseXpos_pressed3_view = 1.0*event->x;
 		id->mouseYpos_pressed3_view = 1.0*event->y;
-		
+
 		id->mouseXpos_pressed3 = id->x0view + (1.0*event->x) / id->zoomFact;
 		id->mouseYpos_pressed3 = id->y0view + (1.0*event->y) / id->zoomFact;
-		
+
 		id->bscale_center_ref = id->bscale_center;
 		id->bscale_slope_ref = id->bscale_slope;
 	}
-             
+
     return FALSE;
 }
 
@@ -839,17 +853,17 @@ static gboolean buttonreleasecallback ( GtkWidget * w,
                                         gpointer *ptr )
 {
 	ImageData *id = (ImageData*) ptr;
-	
+
 	#ifdef VERBOSE
     printf ( " mousebuttonUP %d (x,y)=(%d,%d)state %x\n", (int)event->button, (int)event->x, (int)event->y, event->state ) ;
     #endif
-    
+
     if ( (int)event->button == 1 )
 		id->button1pressed = 0;
 
     if ( (int)event->button == 3 )
 		id->button3pressed = 0;
-    
+
     return FALSE;
 }
 
@@ -936,12 +950,12 @@ static gboolean buttonscrollcallback ( GtkWidget * w,
 
         id->x0view += (id->mouseXpos - id->x0view) * (zfact - 1.0);
         id->x1view += (id->mouseXpos - id->x1view) * (zfact - 1.0);
-        
+
         //id->x1view = id->x0view + (1.0/id->zoomFact * id->viewXsize);
 
         id->y0view += (id->mouseYpos - id->y0view) * (zfact - 1.0);
         id->y1view += (id->mouseYpos - id->y1view) * (zfact - 1.0);
-        
+
         //id->y1view = id->y0view + (1.0/id->zoomFact * id->viewYsize);
 
         viewWindow_check_values(id);
@@ -1025,7 +1039,7 @@ gboolean autominmax_toggled_callback(GtkToggleButton *toggle_button,  gpointer p
 static void bscale_center_moved (GtkRange *range, gpointer ptr)
 {
 	ImageData *id = (ImageData*) ptr;
-	
+
 	id->bscale_center = gtk_range_get_value (range);
 	update_pic_colorbar(ptr);
 	id->update = 1;
@@ -1034,7 +1048,7 @@ static void bscale_center_moved (GtkRange *range, gpointer ptr)
 static void bscale_slope_moved (GtkRange *range, gpointer ptr)
 {
 	ImageData *id = (ImageData*) ptr;
-	
+
 	id->bscale_slope = gtk_range_get_value (range);
 	update_pic_colorbar(ptr);
 	id->update = 1;
@@ -1066,28 +1080,28 @@ gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer data)
 
 
 
-void window_configure_callback(GtkWindow *window, 
+void window_configure_callback(GtkWindow *window,
       GdkEvent *event, gpointer data) {
-          
+
    int x, y;
    GString *buf;
 
 
 	ImageData *id = (ImageData*) data;
-   
+
    id->mainwindow_x = event->configure.x;
    id->mainwindow_y = event->configure.y;
-   
+
    id->mainwindow_width = event->configure.width;
    id->mainwindow_height = event->configure.height;
-   
-   
-   buf = g_string_new(NULL);   
+
+
+   buf = g_string_new(NULL);
    g_string_printf(buf, "%s [%d x %d]", id->streamimage->md[0].name, id->xsize, id->ysize);
-   
-   
+
+
    gtk_window_set_title(window, buf->str);
-   
+
    g_string_free(buf, TRUE);
 }
 
@@ -1108,14 +1122,14 @@ int main(int argc, char **argv) {
 	IMAGE *imarray;    // pointer to array of images
 	char filename[64];
 	char tmpstring[100];
-	
-	float ZOOMVIEW = 2.0;
-	
+
+	float ZOOMVIEW = 1.0;
+
 	int NBIMAGES = 1;
 	imarray = (IMAGE*) malloc(sizeof(IMAGE)*NBIMAGES);
-	
 
-	
+
+
 	ImageStreamIO_filename(filename, 64, argv[1]);
 	printf("Filename = %s\n", filename);
 	if(ImageStreamIO_openIm(&imarray[0], argv[1]) == -1)
@@ -1124,8 +1138,15 @@ int main(int argc, char **argv) {
 		return -1;
 	}
 
-	int imXsize = imarray[0].md[0].size[0];
-	int imYsize = imarray[0].md[0].size[1];
+	int imXsize = 0;
+	int imYsize = 0;
+  if( imarray->md[0].naxis == 2) {
+    imXsize = imarray->md[0].size[0];
+    imYsize = imarray->md[0].size[1];
+  } else if( imarray->md[0].naxis == 3) {
+    imXsize = imarray->md[0].size[1];
+    imYsize = imarray->md[0].size[2];
+  }
 
 	printf("image size = %d x %d\n", imXsize, imYsize);
 
@@ -1133,11 +1154,11 @@ int main(int argc, char **argv) {
 	{
 		ZOOMVIEW = atof(argv[2]);
 	}
-	
+
 
     // Initialize GTK
     gtk_init(&argc, &argv);
-    
+
 
 
 
@@ -1149,7 +1170,7 @@ int main(int argc, char **argv) {
 	id.x0view = 0;
 	id.x1view = imXsize;
 	id.y0view = 0;
-	id.y1view = imYsize;	
+	id.y1view = imYsize;
 	id.viewXsize = (int) (1.0*imXsize*ZOOMVIEW);
 	id.viewYsize = (int) (1.0*imYsize*ZOOMVIEW);
     id.vmin = 0.0;
@@ -1158,15 +1179,15 @@ int main(int argc, char **argv) {
     id.showsaturated_max = 0;
     id.zoomFact = ZOOMVIEW;
     id.update = 1;
-    
+
     id.autominmax = 1;
-    
+
     id.button1pressed = 0;
 	id.button3pressed = 0;
-    
+
     id.stride = id.viewXsize * BYTES_PER_PIXEL;
     id.stride += (4 - id.stride % 4) % 4; // ensure multiple of 4
-	
+
 	printf("stride = %d\n", id.stride);
 
     guchar *pixels = calloc(id.viewYsize * id.stride, 1);
@@ -1190,7 +1211,7 @@ int main(int argc, char **argv) {
 	id.stride_colorbar = id.viewXsize * BYTES_PER_PIXEL;
 	id.stride_colorbar += (4 - id.stride_colorbar % 4) % 4; // ensure multiple of 4
 	guchar *colorbarpixels = calloc(id.colorbar_height * id.stride_colorbar, 1);
-	
+
 	GdkPixbuf *colorbarpb = gdk_pixbuf_new_from_data(
                         colorbarpixels,
                         GDK_COLORSPACE_RGB,                 // colorspace
@@ -1201,7 +1222,7 @@ int main(int argc, char **argv) {
                         free_pixels,                        // destroy_fn
                         NULL                                // destroy_fn_data
                     );
-	
+
    id.gtkimage_colorbar = GTK_IMAGE(gtk_image_new_from_pixbuf(colorbarpb));
 
 
@@ -1255,11 +1276,11 @@ int main(int argc, char **argv) {
 
     // box2 content
     GtkWidget *buttonUpdateLevels = gtk_button_new_with_label ( "Update levels" );
-	
+
 	id.GTKlabelxcoord = gtk_label_new ("x = ");
 	gtk_label_set_xalign(GTK_LABEL(id.GTKlabelxcoord), 0.0);
 	gtk_label_set_justify(GTK_LABEL(id.GTKlabelxcoord), GTK_JUSTIFY_LEFT);
-	
+
 	id.GTKlabelycoord = gtk_label_new ("y = ");
 	gtk_label_set_xalign(GTK_LABEL(id.GTKlabelycoord), 0.0);
 	gtk_label_set_justify(GTK_LABEL(id.GTKlabelycoord), GTK_JUSTIFY_LEFT);
@@ -1267,15 +1288,15 @@ int main(int argc, char **argv) {
 	id.GTKlabelpixval = gtk_label_new ("val = ");
 	gtk_label_set_xalign(GTK_LABEL(id.GTKlabelpixval), 0.0);
 	gtk_label_set_justify(GTK_LABEL(id.GTKlabelpixval), GTK_JUSTIFY_LEFT);
-	
+
 	id.GTKlabelzoom = gtk_label_new ("zoom = 1");
 	gtk_label_set_xalign(GTK_LABEL(id.GTKlabelzoom), 0.0);
-	gtk_label_set_justify(GTK_LABEL(id.GTKlabelzoom), GTK_JUSTIFY_LEFT);	
-	
+	gtk_label_set_justify(GTK_LABEL(id.GTKlabelzoom), GTK_JUSTIFY_LEFT);
+
 	id.GTKlabelxview = gtk_label_new ("x view = ");
 	gtk_label_set_xalign(GTK_LABEL(id.GTKlabelxview), 0.0);
-	gtk_label_set_justify(GTK_LABEL(id.GTKlabelxview), GTK_JUSTIFY_LEFT);	
-	
+	gtk_label_set_justify(GTK_LABEL(id.GTKlabelxview), GTK_JUSTIFY_LEFT);
+
 	id.GTKlabelyview = gtk_label_new ("y view = ");
 	gtk_label_set_xalign(GTK_LABEL(id.GTKlabelyview), 0.0);
 	gtk_label_set_justify(GTK_LABEL(id.GTKlabelyview), GTK_JUSTIFY_LEFT);
@@ -1291,13 +1312,13 @@ int main(int argc, char **argv) {
 
 	id.GTKentry_vmin = gtk_entry_new();
 	sprintf(tmpstring, "%.2f", id.vmin);
-	gtk_entry_set_text(GTK_ENTRY(id.GTKentry_vmin), tmpstring); 
+	gtk_entry_set_text(GTK_ENTRY(id.GTKentry_vmin), tmpstring);
 	gtk_entry_set_max_length(GTK_ENTRY(id.GTKentry_vmin), 8);
 	gtk_entry_set_width_chars(GTK_ENTRY(id.GTKentry_vmin), 8);
 
 	id.GTKentry_vmax = gtk_entry_new();
 	sprintf(tmpstring, "%.2f", id.vmax);
-	gtk_entry_set_text(GTK_ENTRY(id.GTKentry_vmax), tmpstring); 
+	gtk_entry_set_text(GTK_ENTRY(id.GTKentry_vmax), tmpstring);
 	gtk_entry_set_max_length(GTK_ENTRY(id.GTKentry_vmax), 8);
 	gtk_entry_set_width_chars(GTK_ENTRY(id.GTKentry_vmax), 8);
 
@@ -1316,7 +1337,7 @@ int main(int argc, char **argv) {
 
 	// window for image
 	GtkWidget *image = gtk_image_new();
-	
+
 
 
 
@@ -1324,7 +1345,7 @@ int main(int argc, char **argv) {
 
     // add boxes to window
     gtk_container_add (GTK_CONTAINER (window), mainbox);
-    gtk_box_pack_start (GTK_BOX (mainbox), box1, FALSE, FALSE, 0); // image display 
+    gtk_box_pack_start (GTK_BOX (mainbox), box1, FALSE, FALSE, 0); // image display
     gtk_box_pack_start (GTK_BOX (mainbox), box2, FALSE, FALSE, 0); // info panel
 
 
@@ -1355,7 +1376,7 @@ int main(int argc, char **argv) {
 	gtk_grid_attach (GTK_GRID (grid_pixelinfo), GTK_WIDGET(gtk_label_new ("Y range :")), 0, 3, 1, 1);
 	gtk_grid_attach (GTK_GRID (grid_pixelinfo), GTK_WIDGET(id.GTKlabelyview),            1, 3, 3, 1);
 
-	
+
 
 	gtk_box_pack_start (GTK_BOX (box2), GTK_WIDGET(frame_brightnessscale), FALSE, FALSE, 0);
 	gtk_container_add (GTK_CONTAINER (frame_brightnessscale), GTK_WIDGET (grid_brightnessscale));
@@ -1367,7 +1388,7 @@ int main(int argc, char **argv) {
 	gtk_grid_attach (GTK_GRID (grid_brightnessscale), GTK_WIDGET(buttonUpdateLevels),           1, 2, 2, 1);
 	gtk_grid_attach (GTK_GRID (grid_brightnessscale), GTK_WIDGET(GTKlabel_scale_current),       0, 3, 1, 1);
 	gtk_grid_attach (GTK_GRID (grid_brightnessscale), GTK_WIDGET(id.GTKlabel_scale_vmin),       1, 3, 1, 1);
-	gtk_grid_attach (GTK_GRID (grid_brightnessscale), GTK_WIDGET(id.GTKlabel_scale_vmax),       2, 3, 1, 1);	
+	gtk_grid_attach (GTK_GRID (grid_brightnessscale), GTK_WIDGET(id.GTKlabel_scale_vmax),       2, 3, 1, 1);
 
 	gtk_grid_attach (GTK_GRID (grid_brightnessscale), GTK_WIDGET(id.GTKcheck_autominmax),       0, 4, 1, 1);
 
@@ -1375,7 +1396,7 @@ int main(int argc, char **argv) {
 	gtk_grid_attach (GTK_GRID (grid_brightnessscale), GTK_WIDGET(id.GTKcheck_saturation_min),   1, 5, 1, 1);
 	gtk_grid_attach (GTK_GRID (grid_brightnessscale), GTK_WIDGET(id.GTKcheck_saturation_max),   2, 5, 1, 1);
 
-	gtk_grid_attach (GTK_GRID (grid_brightnessscale), GTK_WIDGET(id.GTKscale_bscale_slope),  0, 6, 3, 1); 
+	gtk_grid_attach (GTK_GRID (grid_brightnessscale), GTK_WIDGET(id.GTKscale_bscale_slope),  0, 6, 3, 1);
 	gtk_grid_attach (GTK_GRID (grid_brightnessscale), GTK_WIDGET(id.GTKscale_bscale_center), 0, 7, 3, 1);
 
 
@@ -1383,7 +1404,7 @@ int main(int argc, char **argv) {
 	// SOME INITIALIZATION
 	update_pic_colorbar( &id);
 	UpdateLevelscallback( buttonUpdateLevels, NULL, (void*) &id );
-	
+
 
     // EVENTS
 
