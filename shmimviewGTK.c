@@ -1083,8 +1083,8 @@ void window_configure_callback(GtkWindow *window,
    
    
    buf = g_string_new(NULL);   
-   g_string_printf(buf, "%d %d    %d, %d", id->mainwindow_x, id->mainwindow_y, id->mainwindow_width, id->mainwindow_height);
-//   g_string_printf(buf, "%d, %d", id->mainwindow_width, id->mainwindow_height);
+   g_string_printf(buf, "%s [%d x %d]", id->streamimage->md[0].name, id->xsize, id->ysize);
+   
    
    gtk_window_set_title(window, buf->str);
    
