@@ -333,7 +333,7 @@ int update_pic(gpointer ptr) {
 
         // Fill in comparray
         // this is the image area over which things will be computed
-        switch ( id->streamimage->md[0].atype )
+        switch ( id->streamimage->md[0].datatype )
         {
 			case _DATATYPE_FLOAT:
             for(ii=iimin; ii<iimax; ii++)
@@ -669,7 +669,7 @@ static gboolean mouse_moved(GtkWidget *widget, GdkEvent *event, gpointer ptr) {
                 sprintf(labeltext, "%5d", jj);
                 gtk_label_set_text(GTK_LABEL(id->GTKlabelycoord), labeltext);
 
-                switch ( id->streamimage[0].md[0].atype ) {
+                switch ( id->streamimage[0].md[0].datatype ) {
 
 					case _DATATYPE_FLOAT :
 					sprintf(labeltext, "%18f", id->streamimage[0].array.F[jj*id->xsize+ii]);
