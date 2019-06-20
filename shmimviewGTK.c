@@ -1278,27 +1278,27 @@ int main(int argc, char **argv) {
     GtkWidget *buttonUpdateLevels = gtk_button_new_with_label ( "Update levels" );
 
 	id.GTKlabelxcoord = gtk_label_new ("x = ");
-	gtk_label_set_xalign(GTK_LABEL(id.GTKlabelxcoord), 0.0);
+	//gtk_label_set_xalign(GTK_LABEL(id.GTKlabelxcoord), 0.0);
 	gtk_label_set_justify(GTK_LABEL(id.GTKlabelxcoord), GTK_JUSTIFY_LEFT);
 
 	id.GTKlabelycoord = gtk_label_new ("y = ");
-	gtk_label_set_xalign(GTK_LABEL(id.GTKlabelycoord), 0.0);
+	//gtk_label_set_xalign(GTK_LABEL(id.GTKlabelycoord), 0.0);
 	gtk_label_set_justify(GTK_LABEL(id.GTKlabelycoord), GTK_JUSTIFY_LEFT);
 
 	id.GTKlabelpixval = gtk_label_new ("val = ");
-	gtk_label_set_xalign(GTK_LABEL(id.GTKlabelpixval), 0.0);
+	//gtk_label_set_xalign(GTK_LABEL(id.GTKlabelpixval), 0.0);
 	gtk_label_set_justify(GTK_LABEL(id.GTKlabelpixval), GTK_JUSTIFY_LEFT);
 
 	id.GTKlabelzoom = gtk_label_new ("zoom = 1");
-	gtk_label_set_xalign(GTK_LABEL(id.GTKlabelzoom), 0.0);
+	//gtk_label_set_xalign(GTK_LABEL(id.GTKlabelzoom), 0.0);
 	gtk_label_set_justify(GTK_LABEL(id.GTKlabelzoom), GTK_JUSTIFY_LEFT);
 
 	id.GTKlabelxview = gtk_label_new ("x view = ");
-	gtk_label_set_xalign(GTK_LABEL(id.GTKlabelxview), 0.0);
+	//gtk_label_set_xalign(GTK_LABEL(id.GTKlabelxview), 0.0);
 	gtk_label_set_justify(GTK_LABEL(id.GTKlabelxview), GTK_JUSTIFY_LEFT);
 
 	id.GTKlabelyview = gtk_label_new ("y view = ");
-	gtk_label_set_xalign(GTK_LABEL(id.GTKlabelyview), 0.0);
+	//gtk_label_set_xalign(GTK_LABEL(id.GTKlabelyview), 0.0);
 	gtk_label_set_justify(GTK_LABEL(id.GTKlabelyview), GTK_JUSTIFY_LEFT);
 
 

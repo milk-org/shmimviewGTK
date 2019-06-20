@@ -6,6 +6,11 @@
 
 	sudo apt install libgtk-3-dev
 
+Note that GTK+ version 3.16 or newer is required. To check GTK+ version:
+
+	pkg-config --modversion gtk+-3.0
+
+
 
 
 ## Compilation
