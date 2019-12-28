@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+	<gresource prefix="glade/">
+		<file compressed="true" preprocess="xml-stripblanks">glade/shmimview.glade</file>
+  </gresource>
+</gresources>
+

@@ -9,6 +9,11 @@ mkgauss g1 256 256 30 1.0
 im1=d1+d2+g1
 creaimshm ims1 256 256
 cpsh im1 ims1
+
+mkdisk d01 512 512 200 300 150
+creaimshm ims2 512 512
+cpsh d01 ims2
+
 exitCLI
 EOF
 
