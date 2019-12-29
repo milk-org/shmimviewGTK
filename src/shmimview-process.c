@@ -298,9 +298,6 @@ int update_pic() {
             viewcnt++;
 
 
-
-
-
             char string_streaminfo[300];
             char string_datatype[8];
 
@@ -478,7 +475,9 @@ int update_pic() {
             }
 
 
-            // has the view window changed ?
+			//
+            // If view window changed, recompute mapping from original image to view
+            //
             if( (viewXsize != viewXsize_save)
                     || (viewYsize != viewYsize_save)
                     || (imdataview[viewindex].iimin != iimin_save)
