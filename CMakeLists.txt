@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.5)
+cmake_minimum_required (VERSION 3.15)
 
 PROJECT("shmimviewGTK" C)
 
@@ -41,7 +41,8 @@ PKG_CHECK_MODULES(GTK3 REQUIRED gtk+-3.0)
 # =======================================
 
 # Set Release build flags
-set(CMAKE_C_FLAGS_RELEASE     "-Ofast -DNDEBUG")
+set(CMAKE_C_FLAGS_RELEASE     "-Ofast -DNDEBUG -rdynamic")
+#SET(CMAKE_C_FLAGS "-g -O2 -Wall -Wextra -rdynamic")
 
 # Set a default build type if none was specified
 set(default_build_type "Release")
@@ -78,7 +79,9 @@ ADD_EXECUTABLE(shmimview
 src/shmimview.c src/shmimview-view.c src/shmimview-scale.c src/shmimview-process.c shmimview-ui.c)
 
 
-SET(CMAKE_C_FLAGS "-g -O2 -Wall -Wextra -rdynamic")
+
+
+
 
 
 

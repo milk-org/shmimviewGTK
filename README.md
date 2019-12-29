@@ -6,7 +6,7 @@
 
 	sudo apt install libgtk-3-dev
 
-Note that GTK+ version 3.16 or newer is required. To check GTK+ version:
+Note that GTK+ version 3.22 or newer is required. To check GTK+ version:
 
 	pkg-config --modversion gtk+-3.0
 
@@ -15,7 +15,11 @@ Note that GTK+ version 3.16 or newer is required. To check GTK+ version:
 
 ## Compilation
 
-	gcc -O2 shmimviewGTK.c `pkg-config --cflags --libs gtk+-3.0` -lm -lImageStreamIO -o shmimviewGTK
+	mkdir _build
+	cd _build
+	cmake ..
+	make
+	sudo make install
 
 
 ## Running
@@ -26,5 +30,5 @@ Create test image:
 
 View image:
 
-	./shmimviewGTK ims1
+	./shmimview ims1
 

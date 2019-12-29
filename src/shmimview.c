@@ -5,6 +5,9 @@
 #include <libgen.h>
 
 #include <gtk/gtk.h>
+#include <glib.h>
+#include <glib/gi18n.h>
+#include <locale.h>
 
 
 #include "ImageStruct.h"
@@ -16,6 +19,9 @@
 #include "shmimview-view.h"
 #include "shmimview-scale.h"
 #include "shmimview-process.h"
+
+
+#define GETTEXT_PACKAGE "gtk20"
 
 
 #define BYTES_PER_PIXEL 3
@@ -35,8 +41,19 @@ IMAGE *imarray;
 
 
 
+static gint zoom = 2;
+static gboolean verbose = FALSE;
 
 
+
+
+
+static GOptionEntry entries[] =
+{
+    { "zoom", 'z', 0, G_OPTION_ARG_INT, &zoom, "Zoom", "Z" },
+    { "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose, "Be verbose", NULL },
+    { NULL }
+};
 
 
 
@@ -47,9 +64,31 @@ IMAGE *imarray;
 int main(int argc, char *argv[])
 {
     GtkBuilder      *builder;
+    GError *error = NULL;
+    GOptionContext *context;
 
-	printf("SHMIM viewer version %d.%d.%d\n", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+    setlocale (LC_ALL, "");
+    //  bindtextdomain (GETTEXT_PACKAGE, DT_DIR "/locale");
+    //  bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
+    //  textdomain (GETTEXT_PACKAGE);
 
+
+    printf("SHMIM viewer version %d.%d.%d\n", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+
+    context = g_option_context_new ("- view milk shared memory image stream");
+    g_option_context_add_main_entries (context, entries, GETTEXT_PACKAGE);
+    g_option_context_add_group (context, gtk_get_option_group (TRUE));
+    if (!g_option_context_parse (context, &argc, &argv, &error))
+    {
+        g_print ("option parsing failed: %s\n", error->message);
+        exit (1);
+    }
+
+	printf("zoom = %d\n", zoom);
+
+
+
+	
 
     widgets = g_slice_new(app_widgets);
 
@@ -73,6 +112,16 @@ int main(int argc, char *argv[])
     }
 
 
+	printf("argc = %d\n", argc);
+	if(argc>1){
+		char filename[200];
+		sprintf(filename, "%s.im.shm", argv[1]);
+		printf("Opening stream %s\n", filename);
+		open_shm_image(argv[1], 0);
+	}
+
+
+
     gtk_init(&argc, &argv);
 
     widgets->pressed_status = 0;
@@ -82,7 +131,6 @@ int main(int argc, char *argv[])
 	sprintf(uifilename, "%s/glade/shmimview.glade", SOURCE_DIR);
     builder = gtk_builder_new_from_file(uifilename);
 
-    //widgets->filechooser     = GTK_WIDGET(gtk_builder_get_object(builder, "filechooser"));
 
     widgets->mainwindow      = GTK_WIDGET(gtk_builder_get_object(builder, "window_main"));
     widgets->imviewport      = GTK_WIDGET(gtk_builder_get_object(builder, "imviewport"));
@@ -97,7 +145,7 @@ int main(int argc, char *argv[])
 
 
 	// intensity scale
-	widgets->scale_log1    = GTK_WIDGET(gtk_builder_get_object(builder, "scale_log 1"));
+/*	widgets->scale_log1    = GTK_WIDGET(gtk_builder_get_object(builder, "scale_log 1"));
 	widgets->scale_log2    = GTK_WIDGET(gtk_builder_get_object(builder, "scale_log 2"));
 	widgets->scale_log3    = GTK_WIDGET(gtk_builder_get_object(builder, "scale_log 3"));
 	widgets->scale_log4    = GTK_WIDGET(gtk_builder_get_object(builder, "scale_log 4"));
@@ -121,32 +169,9 @@ int main(int argc, char *argv[])
 	widgets->colormap_grey     = GTK_WIDGET(gtk_builder_get_object(builder, "colormap_grey"));
 	widgets->colormap_heat     = GTK_WIDGET(gtk_builder_get_object(builder, "colormap_heat"));
 	widgets->colormap_cool     = GTK_WIDGET(gtk_builder_get_object(builder, "colormap_cool"));
-
+*/
 
 	gtk_widget_add_events( widgets->mainwindow, GDK_KEY_PRESS_MASK);
-
-
-
-    //	gtk_box_pack_start (GTK_BOX (widgets->imbox), GTK_WIDGET(imdataview[0].gtkimage), FALSE, FALSE, 0);
-    //	gtk_box_pack_start (GTK_BOX (widgets->imbox), GTK_WIDGET(gtk_label_new ("Colorbar")), FALSE, FALSE, 0);
-
-
-
-
-
-    // STREAM FILE OPEN
-
-
-    widgets->button_file_choose = GTK_WIDGET(gtk_builder_get_object(builder, "button_file_choose"));
-
-    GtkFileFilter *filefilter;
-
-    gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER(widgets->button_file_choose), "/milk/shm/");
-
-    filefilter = gtk_file_filter_new();
-    gtk_file_filter_add_pattern(filefilter,"*.im.shm");
-    gtk_file_filter_set_name(filefilter,"milk stream");
-    gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(widgets->button_file_choose), filefilter);
 
 
 
@@ -241,9 +266,7 @@ int open_shm_image(
         imdataview[viewindex].ysize = imarray[index].md[0].size[1];
         
 
-	/*		for(int ii=0;ii<256;ii++)
-				for(int jj=0;jj<256;jj++)
-					imarray[index].array.F[jj*256+ii] = 1.0*ii;*/
+
 
 		// start with zoom 1
 		resize_PixelBufferView(imdataview[viewindex].xsize, imdataview[viewindex].ysize);
@@ -268,10 +291,6 @@ int open_shm_image(
         imdataview[viewindex].xviewmax = imdataview[viewindex].viewXsize; 
         imdataview[viewindex].yviewmin = 0;
         imdataview[viewindex].yviewmax = imdataview[viewindex].viewYsize;
-
-
-		
-		
 
 
         imdataview[viewindex].vmin = 0.0;
@@ -458,8 +477,3 @@ void on_window_main_destroy()
     gtk_main_quit();
 }
 
-
-void on_spinbtn_zoom_value_changed()
-{
-	printf("zoom changed\n");
-}

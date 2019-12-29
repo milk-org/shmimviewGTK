@@ -56,29 +56,22 @@ typedef struct {
 	GtkWidget *label_timing;
 	
 
-    GtkWidget *button_file_choose;       // Pointer to file chooser button
-    GtkWidget *button_streamclear;
 
     GtkWidget *w_img_main;              // Pointer to image widget
 
 
-	// view
-//	GtkWidget *view_streaminfo;
-//	GtkWidget *view_pixinfo;
-	
-
 	// zoom
-	GtkWidget *zoombin4;
+/*	GtkWidget *zoombin4;
 	GtkWidget *zoombin2;
 	GtkWidget *zoom1;
 	GtkWidget *zoom2;
 	GtkWidget *zoom4;
 	GtkWidget *zoom8;
 	
-
+*/
 
     // Intensity scale
-    GtkWidget *scale_log1;
+/*    GtkWidget *scale_log1;
     GtkWidget *scale_log2;
     GtkWidget *scale_log3;
     GtkWidget *scale_log4;
@@ -102,7 +95,7 @@ typedef struct {
     GtkWidget *colormap_grey;
     GtkWidget *colormap_heat;
     GtkWidget *colormap_cool;
-
+*/
 	int pressed_status;
 	float pressed_pos_X;
 	float pressed_pos_Y;
@@ -237,7 +230,7 @@ typedef struct {
 
 
 
-
+int open_shm_image(char *streamname, int index);
 int close_shm_image(int viewindex);
 
 
