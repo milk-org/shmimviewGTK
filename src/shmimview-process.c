@@ -27,17 +27,19 @@ extern IMAGEDATAVIEW *imdataview;
 // Images
 extern IMAGE *imarray;
 
+extern gboolean verbose;
+
 
 
 /*
  * Compate function for qsort
- * 
- */ 
+ *
+ */
 int floatcompare (const void * a, const void * b)
 {
-  float fa = *(const float*) a;
-  float fb = *(const float*) b;
-  return (fa > fb) - (fa < fb);
+    float fa = *(const float*) a;
+    float fb = *(const float*) b;
+    return (fa > fb) - (fa < fb);
 }
 
 
@@ -52,47 +54,47 @@ static void colormap_RGBval (
     unsigned char *Gval,
     unsigned char *Bval)
 {
-	int viewindex = 0;
-	float x, x2;
-	float xlim;
-	
-	switch ( imdataview[viewindex].colormap ) {
-		
-		case COLORMAP_HEAT :
-		*Rval = (unsigned char) (sqrt(pixval)*255);
-		*Gval = (unsigned char) (pixval*sqrt(pixval)*255);
-		*Bval = (unsigned char) (pixval*pixval*255);
-		break;
+    int viewindex = 0;
+    float x, x2;
+    float xlim;
 
-		case COLORMAP_COOL :
-		*Rval = (unsigned char) (pixval*pixval*255);
-		*Gval = (unsigned char) (pixval*sqrt(pixval)*255);
-		*Bval = (unsigned char) (sqrt(pixval)*255);
-		break;
+    switch ( imdataview[viewindex].colormap ) {
 
-		case COLORMAP_BRY :
-		xlim = 0.25;
-		if(pixval<xlim) {
-			*Rval = (unsigned char) 0;
-			*Gval = (unsigned char) 0;
-		}
-		else {
-			x = (pixval-xlim)/(1.0-xlim);
-			x2 = x*x;
-			*Rval = (unsigned char) ( sqrt(x) * 255);
-			*Gval = (unsigned char) ( x2 * 255);
-		}
-		*Bval = (unsigned char) ( (0.5-0.5*cos(pixval*M_PI*3)) * 255);
-		break;
-		
-		
-		default :
-		*Rval = (unsigned char) (pixval*255);
-		*Gval = (unsigned char) (pixval*255);
-		*Bval = (unsigned char) (pixval*255);
-		break;						
-	}
-	
+    case COLORMAP_HEAT :
+        *Rval = (unsigned char) (sqrt(pixval)*255);
+        *Gval = (unsigned char) (pixval*sqrt(pixval)*255);
+        *Bval = (unsigned char) (pixval*pixval*255);
+        break;
+
+    case COLORMAP_COOL :
+        *Rval = (unsigned char) (pixval*pixval*255);
+        *Gval = (unsigned char) (pixval*sqrt(pixval)*255);
+        *Bval = (unsigned char) (sqrt(pixval)*255);
+        break;
+
+    case COLORMAP_BRY :
+        xlim = 0.25;
+        if(pixval<xlim) {
+            *Rval = (unsigned char) 0;
+            *Gval = (unsigned char) 0;
+        }
+        else {
+            x = (pixval-xlim)/(1.0-xlim);
+            x2 = x*x;
+            *Rval = (unsigned char) ( sqrt(x) * 255);
+            *Gval = (unsigned char) ( x2 * 255);
+        }
+        *Bval = (unsigned char) ( (0.5-0.5*cos(pixval*M_PI*3)) * 255);
+        break;
+
+
+    default :
+        *Rval = (unsigned char) (pixval*255);
+        *Gval = (unsigned char) (pixval*255);
+        *Bval = (unsigned char) (pixval*255);
+        break;
+    }
+
 }
 
 
@@ -103,8 +105,8 @@ static void colormap_RGBval (
 void PixVal_to_RGB(float pixval, guchar *rval, guchar *gval, guchar *bval)
 {
     float pixval1;
-	int pixsat = 0;
-	int viewindex = 0;
+    int pixsat = 0;
+    int viewindex = 0;
 
     pixval1 = imdataview[viewindex].bscale_center + (pixval-imdataview[viewindex].bscale_center) * imdataview[viewindex].bscale_slope;
 
@@ -112,7 +114,7 @@ void PixVal_to_RGB(float pixval, guchar *rval, guchar *gval, guchar *bval)
     if(pixval1 < 0.0)
     {
         pixval1 = 0.0;
-       if(imdataview[viewindex].showsaturated_min == 1)
+        if(imdataview[viewindex].showsaturated_min == 1)
         {
             pixsat = 1;
             *rval = 0;
@@ -135,11 +137,11 @@ void PixVal_to_RGB(float pixval, guchar *rval, guchar *gval, guchar *bval)
 
     if(pixsat==0)
     {
-		float pixval2;
-		
-		pixval2 = imdataview[viewindex].scalefunc( pixval1, imdataview[viewindex].scale_coeff);
+        float pixval2;
 
-		colormap_RGBval(pixval2, rval, gval, bval);
+        pixval2 = imdataview[viewindex].scalefunc( pixval1, imdataview[viewindex].scale_coeff);
+
+        colormap_RGBval(pixval2, rval, gval, bval);
     }
 
 }
@@ -161,8 +163,8 @@ int resize_PixelBufferView(int xsize, int ysize)
 {
     int viewindex = 0;
 
-	static int finit = 0;
-	
+    static int finit = 0;
+
     imdataview[viewindex].viewXsize = xsize;
     imdataview[viewindex].viewYsize = ysize;
 
@@ -171,9 +173,11 @@ int resize_PixelBufferView(int xsize, int ysize)
     imdataview[viewindex].stride = imdataview[viewindex].viewXsize * BYTES_PER_PIXEL;
     imdataview[viewindex].stride += (4 - imdataview[viewindex].stride % 4) % 4; // ensure multiple of 4
 
-    printf("stride = %d\n", imdataview[viewindex].stride);
-    printf("ALLOCATING viewpixels %d %d\n", imdataview[viewindex].viewXsize, imdataview[viewindex].viewYsize);
-    fflush(stdout);
+    if(verbose) {
+        printf("stride = %d\n", imdataview[viewindex].stride);
+        printf("ALLOCATING viewpixels %d %d\n", imdataview[viewindex].viewXsize, imdataview[viewindex].viewYsize);
+        fflush(stdout);
+    }
 
     if(finit==1) // only do this on first call
     {
@@ -184,13 +188,13 @@ int resize_PixelBufferView(int xsize, int ysize)
 
     imdataview[viewindex].viewpixels = calloc(imdataview[viewindex].viewYsize * imdataview[viewindex].stride, 1);
     imdataview[viewindex].allocated_viewpixels = 1;
-    
 
 
 
-    printf("DONE\n");
-    fflush(stdout);
-
+    if(verbose) {
+        printf("DONE\n");
+        fflush(stdout);
+    }
 
     imdataview[viewindex].pbview = gdk_pixbuf_new_from_data(
                                        imdataview[viewindex].viewpixels,
@@ -207,10 +211,11 @@ int resize_PixelBufferView(int xsize, int ysize)
 
     imdataview[viewindex].update = 1;
 
-    printf("EVENTBOX SIZE DONE\n");
-    fflush(stdout);
-
-	finit = 1;
+    if(verbose) {
+        printf("EVENTBOX SIZE DONE\n");
+        fflush(stdout);
+    }
+    finit = 1;
 
     return 0;
 }
@@ -273,21 +278,24 @@ int update_pic() {
 
             //	GdkPixbuf *pb = gtk_image_get_pixbuf(imdataview[viewindex].gtkimage);
 
-            printf("============================================\n");
-            printf(" ----- %10lu ----------------\n", viewcnt);
-            printf("\n");
-            printf("MAX VIEW  viewXsize         = %d\n", imdataview[viewindex].viewXsize);
-            printf("MAX VIEW  viewYsize         = %d\n", imdataview[viewindex].viewYsize);
-            printf("\n");
-            printf("ACTIVE VIEW AREA X xview    = %4d - %4d\n", imdataview[viewindex].xviewmin, imdataview[viewindex].xviewmax);
-            printf("ACTIVE VIEW AREA Y yview    = %4d - %4d\n", imdataview[viewindex].yviewmin, imdataview[viewindex].yviewmax);
-            printf("\n");
-            printf("VIEW  zoomFact              = %f\n", imdataview[viewindex].zoomFact);
-            printf("ACTIVE PIX AREA ii          = %4ld - %4ld\n", imdataview[viewindex].iimin, imdataview[viewindex].iimax);
-            printf("ACTIVE PIX AREA jj          = %4ld - %4ld\n", imdataview[viewindex].jjmin, imdataview[viewindex].jjmax);
-            printf("============================================\n");
+            if(verbose) {
+                printf("============================================\n");
+                printf(" ----- %10lu ----------------\n", viewcnt);
+                printf("\n");
+                printf("MAX VIEW  viewXsize         = %d\n", imdataview[viewindex].viewXsize);
+                printf("MAX VIEW  viewYsize         = %d\n", imdataview[viewindex].viewYsize);
+                printf("\n");
+                printf("ACTIVE VIEW AREA X xview    = %4d - %4d\n", imdataview[viewindex].xviewmin, imdataview[viewindex].xviewmax);
+                printf("ACTIVE VIEW AREA Y yview    = %4d - %4d\n", imdataview[viewindex].yviewmin, imdataview[viewindex].yviewmax);
+                printf("\n");
+                printf("VIEW  zoomFact              = %f\n", imdataview[viewindex].zoomFact);
+                printf("ACTIVE PIX AREA ii          = %4ld - %4ld\n", imdataview[viewindex].iimin, imdataview[viewindex].iimax);
+                printf("ACTIVE PIX AREA jj          = %4ld - %4ld\n", imdataview[viewindex].jjmin, imdataview[viewindex].jjmax);
+                printf("============================================\n");
+                fflush(stdout);
+            }
+
             viewcnt++;
-            fflush(stdout);
 
 
 
@@ -340,47 +348,47 @@ int update_pic() {
                 break;
             }
 
-			
-			if(imdataview[viewindex].view_streaminfo == 1) {
-            sprintf(string_streaminfo, "[%d] %s %s %d x %d\nmin/max: %.2g - %.2g\nzoom: %.2f",
-                    viewindex,
-                    imdataview[viewindex].imname,
-                    string_datatype,
-                    imdataview[viewindex].xsize,
-                    imdataview[viewindex].ysize,
-                    imdataview[viewindex].vmin,
-                    imdataview[viewindex].vmax,
-                    imdataview[viewindex].zoomFact
-                    );
-            gtk_label_set_text ( GTK_LABEL(widgets->label_streaminfo), string_streaminfo);
-		} 
-		else {
-			gtk_label_set_text ( GTK_LABEL(widgets->label_streaminfo), "");
-		}
+
+            if(imdataview[viewindex].view_streaminfo == 1) {
+                sprintf(string_streaminfo, "[%d] %s %s %d x %d\nmin/max: %.2g - %.2g\nzoom: %.2f",
+                        viewindex,
+                        imdataview[viewindex].imname,
+                        string_datatype,
+                        imdataview[viewindex].xsize,
+                        imdataview[viewindex].ysize,
+                        imdataview[viewindex].vmin,
+                        imdataview[viewindex].vmax,
+                        imdataview[viewindex].zoomFact
+                       );
+                gtk_label_set_text ( GTK_LABEL(widgets->label_streaminfo), string_streaminfo);
+            }
+            else {
+                gtk_label_set_text ( GTK_LABEL(widgets->label_streaminfo), "");
+            }
 
 
-		if(imdataview[viewindex].view_imstat == 1) {
-			char stringinfo[200];			
-            sprintf(stringinfo, "TOTAL: %.2g",
-                    1.23
-                    );
-            gtk_label_set_text ( GTK_LABEL(widgets->label_imstat), stringinfo);
-		} 
-		else {
-			gtk_label_set_text ( GTK_LABEL(widgets->label_imstat), "");
-		}
+            if(imdataview[viewindex].view_imstat == 1) {
+                char stringinfo[200];
+                sprintf(stringinfo, "TOTAL: %.2g",
+                        1.23
+                       );
+                gtk_label_set_text ( GTK_LABEL(widgets->label_imstat), stringinfo);
+            }
+            else {
+                gtk_label_set_text ( GTK_LABEL(widgets->label_imstat), "");
+            }
 
 
-		if(imdataview[viewindex].view_timing == 1) {
-			char stringinfo[200];
-            sprintf(stringinfo, "cnt0: %ld",
-                    imarray[imindex].md[0].cnt0
-                    );
-            gtk_label_set_text ( GTK_LABEL(widgets->label_timing), stringinfo);
-		} 
-		else {
-			gtk_label_set_text ( GTK_LABEL(widgets->label_timing), "");
-		}
+            if(imdataview[viewindex].view_timing == 1) {
+                char stringinfo[200];
+                sprintf(stringinfo, "cnt0: %ld",
+                        imarray[imindex].md[0].cnt0
+                       );
+                gtk_label_set_text ( GTK_LABEL(widgets->label_timing), stringinfo);
+            }
+            else {
+                gtk_label_set_text ( GTK_LABEL(widgets->label_timing), "");
+            }
 
 
 
@@ -416,7 +424,9 @@ int update_pic() {
 
             if(imdataview[viewindex].computearrayinit == 0)
             {
-                printf("INIT ALLOCATE\n");
+				if(verbose) {
+					printf("INIT ALLOCATE\n");
+				}
 
                 imdataview[viewindex].computearray = (float*) malloc(sizeof(float) * imSize);
                 Rarray = (guchar*) malloc(sizeof(guchar) * imSize);
@@ -429,37 +439,42 @@ int update_pic() {
                 imdataview[viewindex].computearrayinit = 1;
             } else
             {
-                printf("------------ [%5d]\n", __LINE__);
-                fflush(stdout);
+                if(verbose) {
+                    printf("------------ [%5d]\n", __LINE__);
+                    fflush(stdout);
+                }
                 // has view size changed ?
                 if( (viewXsize != viewXsize_save)
                         || (viewYsize != viewYsize_save))
                 {
-                    printf("------------ [%5d] %d alloc_cnt = %d\n", __LINE__, viewindex, alloc_cnt);
-                    fflush(stdout);
+                    if(verbose) {
+                        printf("------------ [%5d] %d alloc_cnt = %d\n", __LINE__, viewindex, alloc_cnt);
+                        fflush(stdout);
+                    }
 
                     free(imdataview[viewindex].PixelRaw_array);
-
-                    printf("------------ [%5d] %d alloc_cnt = %d\n", __LINE__, viewindex, alloc_cnt);
-                    fflush(stdout);
-
+                    if(verbose) {
+                        printf("------------ [%5d] %d alloc_cnt = %d\n", __LINE__, viewindex, alloc_cnt);
+                        fflush(stdout);
+                    }
                     imdataview[viewindex].PixelRaw_array = (long*) malloc(sizeof(long) * viewXsize * viewYsize);
-
-                    printf("------------ [%5d]\n", __LINE__);
-                    fflush(stdout);
-
+                    if(verbose) {
+                        printf("------------ [%5d]\n", __LINE__);
+                        fflush(stdout);
+                    }
                     free(imdataview[viewindex].PixelBuff_array);
                     imdataview[viewindex].PixelBuff_array = (int*) malloc(sizeof(int) * viewXsize * viewYsize);
 
                     alloc_cnt -= 1;
-
+                    if(verbose) {
+                        printf("------------ [%5d]\n", __LINE__);
+                        fflush(stdout);
+                    }
+                }
+                if(verbose) {
                     printf("------------ [%5d]\n", __LINE__);
                     fflush(stdout);
-
                 }
-                printf("------------ [%5d]\n", __LINE__);
-                fflush(stdout);
-
             }
 
 
@@ -475,22 +490,28 @@ int update_pic() {
                     || (imdataview[viewindex].yviewmin != yviewmin_save)
                     || (imdataview[viewindex].yviewmax != yviewmax_save))
             {
-                printf("------------ RECOMPUTING ARRAY TRANSF\n");
-                fflush(stdout);
+                if(verbose) {
+                    printf("------------ RECOMPUTING ARRAY TRANSF\n");
+                    fflush(stdout);
+                }
 
                 // if window changed, recompute mapping between screen pixel and image pixel
                 int xviewrange = imdataview[viewindex].xviewmax - imdataview[viewindex].xviewmin;
                 int yviewrange = imdataview[viewindex].yviewmax - imdataview[viewindex].yviewmin;
 
-                printf("xviewrange = %d\n", xviewrange);
-                printf("yviewrange = %d\n", yviewrange);
-                fflush(stdout);
+                if(verbose) {
+                    printf("xviewrange = %d\n", xviewrange);
+                    printf("yviewrange = %d\n", yviewrange);
+                    fflush(stdout);
+                }
 
                 int iirange = imdataview[viewindex].iimax - imdataview[viewindex].iimin;
                 int jjrange = imdataview[viewindex].jjmax - imdataview[viewindex].jjmin;
 
-                printf("------------ [%5d]\n", __LINE__);
-                fflush(stdout);
+                if(verbose) {
+                    printf("------------ [%5d]\n", __LINE__);
+                    fflush(stdout);
+                }
 
                 for(int yview = 0; yview < viewYsize; yview++)
                     for (int xview = 0; xview < viewXsize; xview++)
@@ -503,8 +524,10 @@ int update_pic() {
                         imdataview[viewindex].PixelBuff_array[pixindexView] = pixindexBuff;
                     }
 
-                printf("------------ [%5d]\n", __LINE__);
-                fflush(stdout);
+                if(verbose) {
+                    printf("------------ [%5d]\n", __LINE__);
+                    fflush(stdout);
+                }
 
 
                 for (int yview = 0; yview < yviewrange; yview++)
@@ -549,9 +572,10 @@ int update_pic() {
                         imdataview[viewindex].PixelRaw_array[pixindexView] = pixindexRaw;
                     }
 
-
-                printf("------------ DONE RECOMPUTING ARRAY TRANSF\n");
-                fflush(stdout);
+                if(verbose) {
+                    printf("------------ DONE RECOMPUTING ARRAY TRANSF\n");
+                    fflush(stdout);
+                }
             }
 
 
@@ -566,8 +590,8 @@ int update_pic() {
             yviewmin_save = imdataview[viewindex].yviewmin;
             yviewmax_save = imdataview[viewindex].yviewmax;
 
-//            printf("------------ [%5d]\n", __LINE__);
-//            fflush(stdout);
+            //            printf("------------ [%5d]\n", __LINE__);
+            //            fflush(stdout);
 
 
 
@@ -643,8 +667,8 @@ int update_pic() {
             }
 
 
- //           printf("------------ [%5d]\n", __LINE__);
- //           fflush(stdout);
+            //           printf("------------ [%5d]\n", __LINE__);
+            //           fflush(stdout);
 
 
             // Recompute min and max scale if needed
@@ -686,8 +710,8 @@ int update_pic() {
 
 
 
-//            printf("------------ [%5d]\n", __LINE__);
-//            fflush(stdout);
+            //            printf("------------ [%5d]\n", __LINE__);
+            //            fflush(stdout);
 
 
             // compute R, G, B values
@@ -728,10 +752,10 @@ int update_pic() {
                 }
 
 
-
-            printf("------------ [%5d]\n", __LINE__);
-            fflush(stdout);
-
+            if(verbose) {
+                printf("------------ [%5d]\n", __LINE__);
+                fflush(stdout);
+            }
 
 
             for(int xview = 0; xview < viewXsize; xview++)
@@ -758,16 +782,18 @@ int update_pic() {
 
                 }
 
-            printf("------------ [%5d]\n", __LINE__);
-            fflush(stdout);
-
+            if(verbose) {
+                printf("------------ [%5d]\n", __LINE__);
+                fflush(stdout);
+            }
 
             //gtk_image_set_from_pixbuf(GTK_IMAGE(imdataview[viewindex].gtkimage), pb);
             gtk_image_set_from_pixbuf(GTK_IMAGE(widgets->w_img_main), imdataview[viewindex].pbview);
 
-
-            printf("------------ [%5d]\n", __LINE__);
-            fflush(stdout);
+            if(verbose) {
+                printf("------------ [%5d]\n", __LINE__);
+                fflush(stdout);
+            }
         }
         imdataview[viewindex].update = 0;
     }

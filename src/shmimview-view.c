@@ -28,14 +28,14 @@ extern IMAGEDATAVIEW *imdataview;
 // Images
 extern IMAGE *imarray;
 
-
+extern gboolean verbose;
 
 
 
 
 int viewWindow_check_values()
 {
-	int viewindex = 0;
+    int viewindex = 0;
 
 
     // Change bounds as needed
@@ -50,23 +50,23 @@ int viewWindow_check_values()
     if( imdataview[viewindex].xviewmax > imdataview[viewindex].viewXsize )
         imdataview[viewindex].xviewmax = imdataview[viewindex].viewXsize;
 
-   if( imdataview[viewindex].yviewmax > imdataview[viewindex].viewYsize )
-		imdataview[viewindex].yviewmax = imdataview[viewindex].viewYsize;
+    if( imdataview[viewindex].yviewmax > imdataview[viewindex].viewYsize )
+        imdataview[viewindex].yviewmax = imdataview[viewindex].viewYsize;
 
 
 
-	if( imdataview[viewindex].iimin < 0 )
-		imdataview[viewindex].iimin = 0;
+    if( imdataview[viewindex].iimin < 0 )
+        imdataview[viewindex].iimin = 0;
 
-	if( imdataview[viewindex].jjmin < 0 )
-		imdataview[viewindex].jjmin = 0;
+    if( imdataview[viewindex].jjmin < 0 )
+        imdataview[viewindex].jjmin = 0;
 
-				
-	if( imdataview[viewindex].iimax > imdataview[viewindex].xsize )
-		imdataview[viewindex].iimax = imdataview[viewindex].xsize;
 
-	if( imdataview[viewindex].jjmax > imdataview[viewindex].ysize )
-		imdataview[viewindex].jjmax = imdataview[viewindex].ysize;
+    if( imdataview[viewindex].iimax > imdataview[viewindex].xsize )
+        imdataview[viewindex].iimax = imdataview[viewindex].xsize;
+
+    if( imdataview[viewindex].jjmax > imdataview[viewindex].ysize )
+        imdataview[viewindex].jjmax = imdataview[viewindex].ysize;
 
 
 
@@ -74,9 +74,9 @@ int viewWindow_check_values()
 
     float zfactX, zfactY;
 
-	zfactX = 1.0*(imdataview[viewindex].iimax - imdataview[viewindex].iimin) / (imdataview[viewindex].xviewmax - imdataview[viewindex].xviewmin);
-	zfactY = 1.0*(imdataview[viewindex].jjmax - imdataview[viewindex].jjmin) / (imdataview[viewindex].yviewmax - imdataview[viewindex].yviewmin);
-    
+    zfactX = 1.0*(imdataview[viewindex].iimax - imdataview[viewindex].iimin) / (imdataview[viewindex].xviewmax - imdataview[viewindex].xviewmin);
+    zfactY = 1.0*(imdataview[viewindex].jjmax - imdataview[viewindex].jjmin) / (imdataview[viewindex].yviewmax - imdataview[viewindex].yviewmin);
+
 
     if(zfactX>zfactY)
         imdataview[viewindex].zoomFact = zfactX;
@@ -85,9 +85,9 @@ int viewWindow_check_values()
 
 
 
-#ifdef VERBOSE
-    printf(" -> %8.4f ===\n", imdataview[viewindex].zoomFact);
-#endif
+    if(verbose) {
+        printf(" -> %8.4f ===\n", imdataview[viewindex].zoomFact);
+    }
 
     return 0;
 }
@@ -112,8 +112,9 @@ gboolean on_imgareaeventbox_scroll_event(
     GdkEventScroll * event,
     __attribute__((unused)) gpointer        data)
 {
-    g_print ("Event - scroll %d >   %f  %f\n", (int) event->direction, event->x, event->y);
-
+    if(verbose) {
+        g_print ("Event - scroll %d >   %f  %f\n", (int) event->direction, event->x, event->y);
+    }
     int viewindex = 0;
 
 
@@ -124,41 +125,43 @@ gboolean on_imgareaeventbox_scroll_event(
     {
 
     case GDK_SCROLL_UP :
-
-        printf("SCROLL UP\n");
-
+        if(verbose) {
+            printf("SCROLL UP\n");
+        }
         zfact = 1.1;
         break;
 
     case GDK_SCROLL_DOWN :
-
-        printf("SCROLL DOWN\n");
-
+        if(verbose) {
+            printf("SCROLL DOWN\n");
+        }
         zfact = 1.0/1.1;
         break;
 
     case GDK_SCROLL_RIGHT :
-
-        printf("SCROLL RIGHT\n");
-
+        if(verbose) {
+            printf("SCROLL RIGHT\n");
+        }
         break;
 
     case GDK_SCROLL_LEFT :
-
-        printf("SCROLL LEFT\n");
-
+        if(verbose) {
+            printf("SCROLL LEFT\n");
+        }
         break;
 
     case GDK_SCROLL_SMOOTH :
-        printf("SCROLL SMOOTH\n");
-        printf("  delta_x = %f\n", (float) event->delta_x );
-        printf("  delta_y = %f\n", (float) event->delta_y );
-		if(event->delta_y>0) {
-			zfact = 1.0/1.1;
-		}
-		else {
-			zfact = 1.1;
-		}
+        if(verbose) {
+            printf("SCROLL SMOOTH\n");
+            printf("  delta_x = %f\n", (float) event->delta_x );
+            printf("  delta_y = %f\n", (float) event->delta_y );
+        }
+        if(event->delta_y>0) {
+            zfact = 1.0/1.1;
+        }
+        else {
+            zfact = 1.1;
+        }
         break;
 
     }
@@ -166,8 +169,8 @@ gboolean on_imgareaeventbox_scroll_event(
 
 
     // min/max limits to zoomFact
-	float zoom_min = 0.1;
-	float zoom_max = 8.0;
+    float zoom_min = 0.1;
+    float zoom_max = 8.0;
 
     float tmpz = imdataview[viewindex].zoomFact * zfact;
     if(tmpz < zoom_min)
@@ -205,7 +208,9 @@ gboolean on_img_main_size_allocate(
     __attribute__((unused)) void *data)
 {
 
-    printf("Event - mainwin  width = %d, height = %d\n", allocation->width, allocation->height);
+    if(verbose) {
+        printf("Event - mainwin  width = %d, height = %d\n", allocation->width, allocation->height);
+    }
     int viewindex = 0;
 
     imdataview[viewindex].viewXsize = allocation->width;
@@ -229,11 +234,13 @@ gboolean on_imgareaeventbox_size_allocate(
     GtkAllocation *allocation,
     __attribute__((unused)) void *data)
 {
-	int viewindex = 0;
-	
-    printf("Event - eventbox width = %d, height = %d\n", allocation->width, allocation->height);
+    int viewindex = 0;
+
+    if(verbose) {
+        printf("Event - eventbox width = %d, height = %d\n", allocation->width, allocation->height);
+    }
     imdataview[viewindex].eventbox_xsize = allocation->width;
-	imdataview[viewindex].eventbox_ysize = allocation->height;
+    imdataview[viewindex].eventbox_ysize = allocation->height;
 
     return TRUE;
 }
@@ -251,22 +258,27 @@ gboolean on_imgareaeventbox_button_press_event(
     GdkEventButton *event,
     __attribute__((unused)) void *data)
 {
-    g_print ("Event - box clicked at coordinates %f,%f\n",
-             event->x, event->y);
+    if(verbose) {
+        g_print ("Event - box clicked at coordinates %f,%f\n",
+                 event->x, event->y);
+    }
 
-	widgets->pressed_status = 1;
-    
+    widgets->pressed_status = 1;
+
     widgets->pressed_pos_X = event->x;
     widgets->pressed_pos_Y = event->y;
-    
+
     GtkAdjustment *hadj = gtk_scrollable_get_hadjustment(GTK_SCROLLABLE(widgets->imviewport));
     double hval = gtk_adjustment_get_value (hadj);
-	g_print ("scroll h value = %f\n", hval);
-
+    if(verbose) {
+        g_print ("scroll h value = %f\n", hval);
+    }
     GtkAdjustment *vadj = gtk_scrollable_get_vadjustment(GTK_SCROLLABLE(widgets->imviewport));
     double vval = gtk_adjustment_get_value (vadj);
-	g_print ("scroll v value = %f\n", vval);
-	
+    if(verbose) {
+        g_print ("scroll v value = %f\n", vval);
+    }
+
     return TRUE;
 }
 
@@ -282,59 +294,59 @@ gboolean on_imgareaeventbox_motion_notify_event(
     char string_pixinfo[200];
     float pixXpos = 0.0;
     float pixYpos = 0.0;
-	int viewindex = 0;
+    int viewindex = 0;
 
 
     pixXpos = event->x;
     pixYpos = event->y;
 
-	float offsetx =  0.5 * (imdataview[viewindex].eventbox_xsize - imdataview[viewindex].viewXsize);
-	float offsety =  0.5 * (imdataview[viewindex].eventbox_ysize - imdataview[viewindex].viewYsize);
+    float offsetx =  0.5 * (imdataview[viewindex].eventbox_xsize - imdataview[viewindex].viewXsize);
+    float offsety =  0.5 * (imdataview[viewindex].eventbox_ysize - imdataview[viewindex].viewYsize);
 
-	if(offsetx < 0.0) {
-		offsetx = 0.0;
-	}
-	if(offsety < 0.0) {
-		offsety = 0.0;
-	}
+    if(offsetx < 0.0) {
+        offsetx = 0.0;
+    }
+    if(offsety < 0.0) {
+        offsety = 0.0;
+    }
 
-	pixXpos -= offsetx;
-	pixYpos -= offsety;
+    pixXpos -= offsetx;
+    pixYpos -= offsety;
 
-	pixXpos /= imdataview[viewindex].zoomFact;
-	pixYpos /= imdataview[viewindex].zoomFact;
+    pixXpos /= imdataview[viewindex].zoomFact;
+    pixYpos /= imdataview[viewindex].zoomFact;
 
 
-	
-	if(imdataview[viewindex].view_pixinfo == 1) {
-		float pixval = 0.0;
-		int ii, jj;
-		
-		ii = (int) (pixXpos+0.5);
-		jj = (int) (pixYpos+0.5);
-		int imindex = imdataview[viewindex].imindex;
-		
-		if( (ii>-1) && (ii<imdataview[viewindex].xsize) && (jj>-1) && (jj<imdataview[viewindex].ysize)) {
-			pixval = imarray[imindex].array.F[jj*imdataview[viewindex].xsize+ii];
-		sprintf(string_pixinfo, "%8.1f %8.1f\npixval = %.2g",
-            pixXpos,
-            pixYpos,
-            pixval);
-            
+
+    if(imdataview[viewindex].view_pixinfo == 1) {
+        float pixval = 0.0;
+        int ii, jj;
+
+        ii = (int) (pixXpos+0.5);
+        jj = (int) (pixYpos+0.5);
+        int imindex = imdataview[viewindex].imindex;
+
+        if( (ii>-1) && (ii<imdataview[viewindex].xsize) && (jj>-1) && (jj<imdataview[viewindex].ysize)) {
+            pixval = imarray[imindex].array.F[jj*imdataview[viewindex].xsize+ii];
+            sprintf(string_pixinfo, "%8.1f %8.1f\npixval = %.2g",
+                    pixXpos,
+                    pixYpos,
+                    pixval);
+
             imdataview[viewindex].pointerXpos = pixXpos;
             imdataview[viewindex].pointerYpos = pixYpos;
             imdataview[viewindex].pointerPixValue = pixval;
-		}
-		else
-		{
-			sprintf(string_pixinfo, "---");
-		}
-            
-    gtk_label_set_text ( GTK_LABEL(widgets->label_pixinfo), string_pixinfo);
-	}
-	else {
-		gtk_label_set_text ( GTK_LABEL(widgets->label_pixinfo), "");
-	}
+        }
+        else
+        {
+            sprintf(string_pixinfo, "---");
+        }
+
+        gtk_label_set_text ( GTK_LABEL(widgets->label_pixinfo), string_pixinfo);
+    }
+    else {
+        gtk_label_set_text ( GTK_LABEL(widgets->label_pixinfo), "");
+    }
 
 
 
@@ -342,19 +354,23 @@ gboolean on_imgareaeventbox_motion_notify_event(
     if(widgets->pressed_status == 1) {
         float dx = event->x - widgets->pressed_pos_X;
         float dy = event->y - widgets->pressed_pos_Y;
-
-        printf("VECTOR : %f %f\n", dx, dy);
-
+        if(verbose) {
+            printf("VECTOR : %f %f\n", dx, dy);
+        }
         GtkAdjustment *hadj = gtk_scrollable_get_hadjustment(GTK_SCROLLABLE(widgets->imviewport));
         double hval = gtk_adjustment_get_value (hadj);
         double hval1 = hval - dx;
-        g_print ("scroll h value = %f -> %f\n", hval, hval1);
+        if(verbose) {
+            g_print ("scroll h value = %f -> %f\n", hval, hval1);
+        }
         gtk_adjustment_set_value (hadj, hval1);
 
         GtkAdjustment *vadj = gtk_scrollable_get_vadjustment(GTK_SCROLLABLE(widgets->imviewport));
         double vval = gtk_adjustment_get_value (vadj);
         double vval1 = vval - dy;
-        g_print ("scroll v value = %f -> %f\n", vval, vval1);
+        if(verbose) {
+            g_print ("scroll v value = %f -> %f\n", vval, vval1);
+        }
         gtk_adjustment_set_value (vadj, vval1);
 
     }
@@ -369,28 +385,34 @@ gboolean on_imgareaeventbox_button_release_event(
     GdkEventButton *event,
     __attribute__((unused)) void *data)
 {
-/*    g_print ("Event button release at coordinates %f,%f\n",
-             event->x, event->y);
-	*/
-	widgets->pressed_status = 0;
+    /*    g_print ("Event button release at coordinates %f,%f\n",
+                 event->x, event->y);
+    	*/
+    widgets->pressed_status = 0;
 
-	float dx = event->x - widgets->pressed_pos_X;
-	float dy = event->y - widgets->pressed_pos_Y;
+    float dx = event->x - widgets->pressed_pos_X;
+    float dy = event->y - widgets->pressed_pos_Y;
 
-	printf("VECTOR : %f %f\n", dx, dy);
+    if(verbose) {
+        printf("VECTOR : %f %f\n", dx, dy);
+    }
 
     GtkAdjustment *hadj = gtk_scrollable_get_hadjustment(GTK_SCROLLABLE(widgets->imviewport));
     double hval = gtk_adjustment_get_value (hadj);
     double hval1 = hval - dx;
-	g_print ("scroll h value = %f -> %f\n", hval, hval1);
-	gtk_adjustment_set_value (hadj, hval1);
+    if(verbose) {
+        g_print ("scroll h value = %f -> %f\n", hval, hval1);
+    }
+    gtk_adjustment_set_value (hadj, hval1);
 
     GtkAdjustment *vadj = gtk_scrollable_get_vadjustment(GTK_SCROLLABLE(widgets->imviewport));
     double vval = gtk_adjustment_get_value (vadj);
     double vval1 = vval - dy;
-	g_print ("scroll v value = %f -> %f\n", vval, vval1);
-	gtk_adjustment_set_value (vadj, vval1);
-	
+    if(verbose) {
+        g_print ("scroll v value = %f -> %f\n", vval, vval1);
+    }
+    gtk_adjustment_set_value (vadj, vval1);
+
     return TRUE;
 }
 
@@ -406,12 +428,16 @@ gboolean on_window_main_key_press_event(
 {
     int viewindex = 0;
 
-    g_print ("WINDOWMAIN KEY PRESS callback\n"); //TEST
+    if(verbose) {
+        g_print ("WINDOWMAIN KEY PRESS callback\n"); //TEST
+    }
 
     switch (event->keyval)
     {
     case GDK_KEY_u:
-        printf("Updating display\n");
+        if(verbose) {
+            printf("Updating display\n");
+        }
         imdataview[viewindex].update = 1;
         break;
 
@@ -421,7 +447,7 @@ gboolean on_window_main_key_press_event(
         break;
 
     case GDK_KEY_M: // set scale max to current pixel value
-		imdataview[viewindex].vmax = imdataview[viewindex].pointerPixValue;
+        imdataview[viewindex].vmax = imdataview[viewindex].pointerPixValue;
         imdataview[viewindex].update = 1;
         break;
 
@@ -440,12 +466,13 @@ gboolean on_menuitem_clear_activate(
     __attribute__((unused)) GtkWidget      *widget,
     __attribute__((unused)) void *data)
 {
-	g_print("button streamclear clicked\n");
+    if(verbose) {
+        g_print("button streamclear clicked\n");
+    }
+    int viewindex = 0;
+    close_shm_image(viewindex);
 
-	int viewindex = 0;
-	close_shm_image(viewindex);
-		
-	return TRUE;
+    return TRUE;
 }
 
 
@@ -460,11 +487,13 @@ void on_zoombin4_toggled(
     GtkWidget      *widget,
     __attribute__((unused)) void *data)
 {
-	int viewindex = 0;
+    int viewindex = 0;
     gboolean T = gtk_check_menu_item_get_active ( GTK_CHECK_MENU_ITEM(widget) );
 
     if (T) {
-        printf("zoom 1/4\n");
+        if(verbose) {
+            printf("zoom 1/4\n");
+        }
         imdataview[viewindex].zoomFact = 0.25;
         resize_PixelBufferView(
             imdataview[viewindex].xsize/4,
@@ -473,7 +502,7 @@ void on_zoombin4_toggled(
         imdataview[viewindex].xviewmax = imdataview[viewindex].viewXsize;
         imdataview[viewindex].yviewmin = 0;
         imdataview[viewindex].yviewmax = imdataview[viewindex].viewYsize;
-        
+
         imdataview[viewindex].update = 1;
     }
 }
@@ -482,20 +511,22 @@ void on_zoombin2_toggled(
     GtkWidget      *widget,
     __attribute__((unused)) void *data)
 {
-	int viewindex = 0;
+    int viewindex = 0;
     gboolean T = gtk_check_menu_item_get_active ( GTK_CHECK_MENU_ITEM(widget) );
 
     if (T) {
-        printf("zoom 1/2\n");
+        if(verbose) {
+            printf("zoom 1/2\n");
+        }
         imdataview[viewindex].zoomFact = 0.5;
         resize_PixelBufferView(
             imdataview[viewindex].xsize/2,
-            imdataview[viewindex].ysize/2);      
+            imdataview[viewindex].ysize/2);
         imdataview[viewindex].xviewmin = 0;
         imdataview[viewindex].xviewmax = imdataview[viewindex].viewXsize;
         imdataview[viewindex].yviewmin = 0;
         imdataview[viewindex].yviewmax = imdataview[viewindex].viewYsize;
-                
+
         imdataview[viewindex].update = 1;
     }
 }
@@ -508,7 +539,9 @@ void on_zoom1_toggled(
     gboolean T = gtk_check_menu_item_get_active ( GTK_CHECK_MENU_ITEM(widget) );
 
     if (T) {
-        printf("zoom 1\n");
+        if(verbose) {
+            printf("zoom 1\n");
+        }
         imdataview[viewindex].zoomFact = 1;
         resize_PixelBufferView(
             imdataview[viewindex].xsize,
@@ -530,7 +563,9 @@ void on_zoom2_toggled(
     gboolean T = gtk_check_menu_item_get_active ( GTK_CHECK_MENU_ITEM(widget) );
 
     if (T) {
-        printf("zoom 2\n");
+        if(verbose) {
+            printf("zoom 2\n");
+        }
         imdataview[viewindex].zoomFact = 2;
         resize_PixelBufferView(
             2*imdataview[viewindex].xsize,
@@ -548,11 +583,13 @@ void on_zoom4_toggled(
     GtkWidget      *widget,
     __attribute__((unused)) void *data)
 {
-	int viewindex = 0;
+    int viewindex = 0;
     gboolean T = gtk_check_menu_item_get_active ( GTK_CHECK_MENU_ITEM(widget) );
 
     if (T) {
-        printf("zoom 4\n");
+        if(verbose) {
+            printf("zoom 4\n");
+        }
         imdataview[viewindex].zoomFact = 4;
         resize_PixelBufferView(
             4*imdataview[viewindex].xsize,
@@ -561,7 +598,7 @@ void on_zoom4_toggled(
         imdataview[viewindex].xviewmax = imdataview[viewindex].viewXsize;
         imdataview[viewindex].yviewmin = 0;
         imdataview[viewindex].yviewmax = imdataview[viewindex].viewYsize;
-            
+
         imdataview[viewindex].update = 1;
     }
 }
@@ -570,11 +607,13 @@ void on_zoom8_toggled(
     GtkWidget      *widget,
     __attribute__((unused)) void *data)
 {
-	int viewindex = 0;
+    int viewindex = 0;
     gboolean T = gtk_check_menu_item_get_active ( GTK_CHECK_MENU_ITEM(widget) );
 
     if (T) {
-        printf("zoom 8\n");
+        if(verbose) {
+            printf("zoom 8\n");
+        }
         imdataview[viewindex].zoomFact = 8;
         resize_PixelBufferView(
             8*imdataview[viewindex].xsize,
@@ -583,7 +622,7 @@ void on_zoom8_toggled(
         imdataview[viewindex].xviewmax = imdataview[viewindex].viewXsize;
         imdataview[viewindex].yviewmin = 0;
         imdataview[viewindex].yviewmax = imdataview[viewindex].viewYsize;
-        
+
         imdataview[viewindex].update = 1;
     }
 }
