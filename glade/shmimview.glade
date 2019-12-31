@@ -529,6 +529,17 @@
                         <signal name="toggled" handler="on_colormap_bry_toggled" swapped="no"/>
                       </object>
                     </child>
+                    <child>
+                      <object class="GtkRadioMenuItem" id="colormap_rgb">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">RGB</property>
+                        <property name="use_underline">True</property>
+                        <property name="draw_as_radio">True</property>
+                        <property name="group">colormap_grey</property>
+                        <signal name="toggled" handler="on_colormap_rgb_toggled" swapped="no"/>
+                      </object>
+                    </child>
                   </object>
                 </child>
               </object>

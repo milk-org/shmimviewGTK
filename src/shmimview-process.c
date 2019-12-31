@@ -72,6 +72,20 @@ static void colormap_RGBval (
         *Bval = (unsigned char) (sqrt(pixval)*255);
         break;
 
+    case COLORMAP_RGB :
+		if(pixval < 0.5) {
+			*Rval = (unsigned char) (255.0*(1.0-pixval*2.0));
+			*Gval = (unsigned char) (pixval*2.0*255);
+			*Bval = (unsigned char) (0);
+		}
+		else
+		{
+			*Rval = (unsigned char) (0);
+			*Gval = (unsigned char) (255.0*(2.0-pixval*2.0));
+			*Bval = (unsigned char) ((pixval-0.5)*2.0*255);
+		}
+        break;
+
     case COLORMAP_BRY :
         xlim = 0.25;
         if(pixval<xlim) {
@@ -108,7 +122,8 @@ void PixVal_to_RGB(float pixval, guchar *rval, guchar *gval, guchar *bval)
     int pixsat = 0;
     int viewindex = 0;
 
-    pixval1 = imdataview[viewindex].bscale_center + (pixval-imdataview[viewindex].bscale_center) * imdataview[viewindex].bscale_slope;
+    pixval1 = 0.5 + (pixval-imdataview[viewindex].bscale_center)* imdataview[viewindex].bscale_slope;
+             // (pixval-imdataview[viewindex].bscale_center) * imdataview[viewindex].bscale_slope;
 
 
     if(pixval1 < 0.0)
@@ -249,7 +264,8 @@ int update_pic() {
 
 
     int viewindex = 0;
-    int imindex = imdataview[viewindex].imindex;
+    int imindex;
+    int imindexdisp;
 
     int viewXsize, viewYsize; // local copies
 
@@ -259,15 +275,23 @@ int update_pic() {
 
 
 
+	if(imdataview[viewindex].dispmap == 1) {
+		imindexdisp = imdataview[viewindex].dispmap_imindex;
+		imindex     = imdataview[viewindex].imindex;
+	}
+	else
+	{
+		imindexdisp = imdataview[viewindex].imindex;
+		imindex     = imdataview[viewindex].imindex;
+	}
+
     if(viewcnt == 0)
-        imdataview[0].update = 1;
+        imdataview[viewindex].update = 1;
 
 
 
     if(imindex != -1)
     {
-
-
 
         if(imcnt0 != imarray[imindex].md[0].cnt0) {
             imdataview[viewindex].update = 1;
@@ -347,7 +371,7 @@ int update_pic() {
 
 
             if(imdataview[viewindex].view_streaminfo == 1) {
-                sprintf(string_streaminfo, "[%d] %s %s %d x %d\nmin/max: %.2g - %.2g\nzoom: %.2f",
+                sprintf(string_streaminfo, "[%d] %s %s %d x %d\nmin/max: %.2g - %.2g\nzoom: %.2f\nscale: %.3f %3f",
                         viewindex,
                         imdataview[viewindex].imname,
                         string_datatype,
@@ -355,7 +379,9 @@ int update_pic() {
                         imdataview[viewindex].ysize,
                         imdataview[viewindex].vmin,
                         imdataview[viewindex].vmax,
-                        imdataview[viewindex].zoomFact
+                        imdataview[viewindex].zoomFact,
+                        imdataview[viewindex].bscale_center,
+                        imdataview[viewindex].bscale_slope
                        );
                 gtk_label_set_text ( GTK_LABEL(widgets->label_streaminfo), string_streaminfo);
             }
@@ -394,11 +420,27 @@ int update_pic() {
 
 
             imcnt0 = imarray[imindex].md[0].cnt0;
+            int imXsizedisp = 0;
+            int imYsizedisp = 0;
+            int imiddisp = 0;
+
+            if( imarray[imindexdisp].md[0].naxis == 2) {				
+                imXsizedisp = imarray[imindexdisp].md[0].size[0];
+                imYsizedisp = imarray[imindexdisp].md[0].size[1];
+                imiddisp = 0;
+            } else if( imarray[imindexdisp].md[0].naxis == 3) {
+                imXsizedisp = imarray[imindexdisp].md[0].size[1];
+                imYsizedisp = imarray[imindexdisp].md[0].size[2];
+                imiddisp = imcnt0 % imarray[imindexdisp].md[0].size[0];
+            }
+            int imSizedisp = imXsizedisp * imYsizedisp;
+            
+
             int imXsize = 0;
             int imYsize = 0;
             int imid = 0;
 
-            if( imarray[imindex].md[0].naxis == 2) {
+            if( imarray[imindex].md[0].naxis == 2) {				
                 imXsize = imarray[imindex].md[0].size[0];
                 imYsize = imarray[imindex].md[0].size[1];
                 imid = 0;
@@ -407,7 +449,8 @@ int update_pic() {
                 imYsize = imarray[imindex].md[0].size[2];
                 imid = imcnt0 % imarray[imindex].md[0].size[0];
             }
-            int imSize = imXsize*imYsize;
+            int imSize = imXsize * imYsize;
+
 
             guchar *array = gdk_pixbuf_get_pixels(imdataview[viewindex].pbview);
 
@@ -434,7 +477,8 @@ int update_pic() {
                 imdataview[viewindex].PixelRaw_array = (long*) malloc(sizeof(long) * viewXsize * viewYsize);
                 imdataview[viewindex].PixelBuff_array = (int*) malloc(sizeof(int) * viewXsize * viewYsize);
                 imdataview[viewindex].computearrayinit = 1;
-            } else
+            } 
+            else
             {
                 if(verbose) {
                     printf("------------ [%5d]\n", __LINE__);
@@ -507,6 +551,9 @@ int update_pic() {
                 int iirange = imdataview[viewindex].iimax - imdataview[viewindex].iimin;
                 int jjrange = imdataview[viewindex].jjmax - imdataview[viewindex].jjmin;
 
+                int iirangedisp = imdataview[viewindex].iimaxdisp - imdataview[viewindex].iimindisp;
+                int jjrangedisp = imdataview[viewindex].jjmaxdisp - imdataview[viewindex].jjmindisp;
+
                 if(verbose) {
                     printf("------------ [%5d]\n", __LINE__);
                     fflush(stdout);
@@ -535,18 +582,17 @@ int update_pic() {
                         long pixindexRaw;
                         long pixindexView;
 
-                        //int xviewabs; // absolute on screen
-                        //int yviewabs; // absolute on screen
-
-                        //xviewabs = xview + imdataview[viewindex].xviewmin;
-                        //yviewabs = yview + imdataview[viewindex].yviewmin;
-
                         pixindexView = yview * viewXsize + xview;
 
-                        ii = (int) ( 1.0*xview/xviewrange*iirange +  imdataview[viewindex].iimin);
-                        jj = (int) ( 1.0*yview/yviewrange*jjrange +  imdataview[viewindex].jjmin);
+                        ii = (int) ( 1.0*xview/xviewrange*iirangedisp +  imdataview[viewindex].iimindisp);
+                        jj = (int) ( 1.0*yview/yviewrange*jjrangedisp +  imdataview[viewindex].jjmindisp);
 
-                        pixindexRaw = jj*imXsize+ii;
+                        pixindexRaw = jj*imXsizedisp + ii;
+                        
+                        if(imdataview[viewindex].dispmap == 1) {
+							pixindexRaw = imarray[imdataview[viewindex].dispmap_imindex].array.SI32[jj*imXsizedisp+ii];
+						} 
+
 
                         if(ii<0) {
                             ii = 0;
@@ -558,13 +604,13 @@ int update_pic() {
                             pixindexRaw = -1;
                         }
 
-                        if(ii > imdataview[viewindex].xsize-1) {
-                            ii = imdataview[viewindex].xsize-1;
+                        if(ii > imdataview[viewindex].xsizedisp-1) {
+                            ii = imdataview[viewindex].xsizedisp-1;
                             pixindexRaw = -1;
                         }
 
-                        if(jj > imdataview[viewindex].ysize-1) {
-                            jj = imdataview[viewindex].ysize-1;
+                        if(jj > imdataview[viewindex].ysizedisp-1) {
+                            jj = imdataview[viewindex].ysizedisp-1;
                             pixindexRaw = -1;
                         }
 
@@ -768,7 +814,7 @@ int update_pic() {
                     // if(pixindex != -1) {
                     if(pixindexRaw == -1) {
                         array[pixindexPb] = 0;
-                        array[pixindexPb+1] = 255;
+                        array[pixindexPb+1] = 70;
                         array[pixindexPb+2] = 0;
                     }
                     else

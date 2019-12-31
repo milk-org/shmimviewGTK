@@ -152,7 +152,7 @@ int main(int argc, char *argv[])
     //  bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
     //  textdomain (GETTEXT_PACKAGE);
 
-	
+
     printf("SHMIM viewer version %d.%d.%d\n", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
 
     char shmdirname[200];
@@ -181,6 +181,9 @@ int main(int argc, char *argv[])
     imarray = (IMAGE*) malloc(sizeof(IMAGE)*NB_IMAGES_MAX);
 
     for(int i=0; i<NB_IMDATAVIEW_MAX; i++) {
+
+        imdataview[i].dispmap = 0;
+
         imdataview[i].imindex  = -1;
         imdataview[i].computearrayinit = 0;
         imdataview[i].allocated_viewpixels = 0;
@@ -189,6 +192,9 @@ int main(int argc, char *argv[])
         imdataview[i].scale_type = SCALE_LINEAR;
         imdataview[i].scalefunc = *scalefunction_linear;
         imdataview[i].scale_coeff = 0.0;
+
+        imdataview[i].bscale_center = 0.5;
+        imdataview[i].bscale_slope = 1.0;
 
         imdataview[i].view_streaminfo = 0;
         imdataview[i].view_pixinfo    = 0;
@@ -214,7 +220,8 @@ int main(int argc, char *argv[])
 
     gtk_init(&argc, &argv);
 
-    widgets->pressed_status = 0;
+    widgets->pressed_button1_status = 0;
+    widgets->pressed_button3_status = 0;
 
 
     char uifilename[200];
@@ -320,19 +327,53 @@ void free_pixels(guchar *pixels, __attribute__((unused)) gpointer data) {
 
 
 
+
+
+
 int open_shm_image(
     char *streamname,
     int index)
 {
-    char filename[64];
+    char stream_filename[64];
+    
+    /* 
+     * An optional dispmap (display mapping) stream is used 
+     * to remap the input into a (usually larger) view map
+     * 
+     * For example, the stream may consist of 10 pixel, and
+     * the corresponding dispmap may be 100 x 100 pixel 2D 
+     * map. The pixel values in the dispmap (int) identify to 
+     * which zone the pixel belongs. In the display window, 
+     * the 100 x 100 array will be displayed, and each pixel 
+     * will take the value of the zone (0 to 9) to which is 
+     * belongs.
+     * Zone values of -1 will be kept at zero.
+     * 
+     * 
+     * standard name for dispmap corresponding to <streamname> is:
+     * <streamname>_dispmap
+     * 
+     */
+    char dispmap_stream_filename[100];
+	
 
     int viewindex = 0;
 
-    ImageStreamIO_filename(filename, 64, streamname);
+
+    ImageStreamIO_filename(stream_filename, 64, streamname);
+    
+    char dispmap_streamname[100];
+    sprintf(dispmap_streamname, "%s_dispmap", streamname);
+    ImageStreamIO_filename(dispmap_stream_filename, 100, dispmap_streamname);
 
     if(verbose) {
-        printf("Filename = %s\n", filename);
+        printf("Filename = %s\n", stream_filename);
+        printf("dispname (optional) = %s\n", dispmap_stream_filename);
     }
+
+
+
+
 
     if(ImageStreamIO_openIm(&imarray[index], streamname) == -1)
     {
@@ -348,30 +389,76 @@ int open_shm_image(
                    imarray[index].md[0].size[1]);
         }
         sprintf(imdataview[viewindex].imname, "%s", streamname);
-        imdataview[viewindex].naxis = imarray[index].md[0].naxis;
+        
+        
+        long imindexdisp;
+        long imindex;
+        
+        
+        
+        // look for display map
+
+        int dispmap_index = index + 1;
+        if(ImageStreamIO_openIm(&imarray[dispmap_index], dispmap_streamname) == IMAGESTREAMIO_SUCCESS)
+        {
+			imdataview[viewindex].dispmap = 1;
+			imdataview[viewindex].dispmap_imindex = dispmap_index;
+			printf("FOUND DISPLAY MAP\n");
+			
+			imindexdisp = imdataview[viewindex].dispmap_imindex;
+		}
+        
+        
+
+        
+        
+        
+        
+       
 
         if(imdataview[viewindex].imindex != -1) {
             close_shm_image(viewindex);
         }
 
         imdataview[viewindex].imindex = 0;
+        imindex     = imdataview[viewindex].imindex;
+        if(imdataview[viewindex].dispmap == 0) {
+			imindexdisp = imdataview[viewindex].imindex; // default
+		}
+        
+        
+        
 
         // image size
-        imdataview[viewindex].xsize = imarray[index].md[0].size[0];
-        imdataview[viewindex].ysize = imarray[index].md[0].size[1];
+        imdataview[viewindex].naxis = imarray[imindex].md[0].naxis; 
+        imdataview[viewindex].xsize = imarray[imindex].md[0].size[0];
+        imdataview[viewindex].ysize = imarray[imindex].md[0].size[1];
 
+        imdataview[viewindex].naxisdisp = imarray[imindexdisp].md[0].naxis;         
+        imdataview[viewindex].xsizedisp = imarray[imindexdisp].md[0].size[0];
+        imdataview[viewindex].ysizedisp = imarray[imindexdisp].md[0].size[1];
 
-
+		
+		if(verbose) {
+			printf("map size = %d %d\n", imdataview[viewindex].xsizedisp, imdataview[viewindex].ysizedisp);
+		}
+		
 
         // start with zoom 1
-        resize_PixelBufferView(imdataview[viewindex].xsize, imdataview[viewindex].ysize);
+        resize_PixelBufferView(imdataview[viewindex].xsizedisp, imdataview[viewindex].ysizedisp);
 
 
-        // set pix active area
+        // set pix active area in raw stream
         imdataview[viewindex].iimin = 0;
-        imdataview[viewindex].iimax = imarray[index].md[0].size[0];
+        imdataview[viewindex].iimax = imarray[imindex].md[0].size[0];
         imdataview[viewindex].jjmin = 0;
-        imdataview[viewindex].jjmax = imarray[index].md[0].size[1];
+        imdataview[viewindex].jjmax = imarray[imindex].md[0].size[1];
+
+        imdataview[viewindex].iimindisp = 0;
+        imdataview[viewindex].iimaxdisp = imarray[imindexdisp].md[0].size[0];
+        imdataview[viewindex].jjmindisp = 0;
+        imdataview[viewindex].jjmaxdisp = imarray[imindexdisp].md[0].size[1];
+
 
 
         // we initially set zoom factor = 1

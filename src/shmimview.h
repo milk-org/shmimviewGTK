@@ -35,7 +35,7 @@
 #define COLORMAP_HEAT   1
 #define COLORMAP_COOL   2
 #define COLORMAP_BRY    3
-
+#define COLORMAP_RGB    4
 
 
 
@@ -96,7 +96,8 @@ typedef struct {
     GtkWidget *colormap_heat;
     GtkWidget *colormap_cool;
 */
-	int pressed_status;
+	int pressed_button1_status;
+	int pressed_button3_status;
 	float pressed_pos_X;
 	float pressed_pos_Y;
 
@@ -111,20 +112,17 @@ typedef struct {
 	// image data
     
     
+    int dispmap; // 1 if using a display map
+    
+    
     int stride;
-	
-	// main window
-	//int mainwindow_x;
-	//int mainwindow_y;
-	//int mainwindow_width;
-	//int mainwindow_height;
-	
+
 	
 	// pinter to GtkImage
 	GtkImage *gtkimage;
 
 	int computearrayinit;
-	float *computearray; // compute array - same size as image. This is where pixel computations are done
+	float* computearray; // compute array - same size as image. This is where pixel computations are done
 
 
 	float pointerXpos; // current X position (image pixel unit)
@@ -133,6 +131,7 @@ typedef struct {
 
 	// image index
 	int imindex;
+	int dispmap_imindex;
 	int active;
 
 	// size of eventbox
@@ -143,9 +142,8 @@ typedef struct {
 	int viewXsize, viewYsize;
 	// part of image displayed (view coordinates)
 	int xviewmin, xviewmax, yviewmin, yviewmax;           
+
 	// pixel buffer
-//	GdkPixbuf *pb;
-	
 	GdkPixbuf *pbview;
 	
 	guchar *viewpixels;
@@ -155,12 +153,21 @@ typedef struct {
 
 
 	char imname[200];
-	int naxis;
+
+	
 	int imtype;
+	
+	int naxis;	
 	// image size, pixel coordinates
 	int ysize, xsize;
 	// part of image displayed (pixel coordinates)
 	long  iimin, iimax, jjmin, jjmax;               
+
+	int naxisdisp;
+	// image size, pixel coordinates
+	int ysizedisp, xsizedisp;
+	// part of image displayed (pixel coordinates)
+	long  iimindisp, iimaxdisp, jjmindisp, jjmaxdisp;       
 
 
 	// view
@@ -189,8 +196,11 @@ typedef struct {
 	
 	float bscale_slope;
 	float bscale_center;
-
-
+	float bscale_center_ref;
+	float bscale_slope_ref;
+	
+	
+	
 	// mouse
 	float mouseXpos, mouseYpos;                             // current mouse coord (in image pix units)
 	int iisel, jjsel;                                       // selected pixel
@@ -207,8 +217,6 @@ typedef struct {
 	float mouseXpos_pressed3, mouseYpos_pressed3;           // coordinates last time button 1 pressed (in image pix units)
 	float mouseXpos_pressed3_view, mouseYpos_pressed3_view; // coordinates last time button 1 pressed (in view pix units)
 
-	float bscale_center_ref;
-	float bscale_slope_ref;
 
 
 
@@ -235,20 +243,7 @@ int close_shm_image(int viewindex);
 
 
 
-
-
 gboolean  on_window_main_key_press_event(GtkWidget *widget, GdkEventKey *event, void *data);
-
-int resize_PixelBufferView(int xsize, int ysize);
-
-int update_pic();
-
-
-
-
-
-
-
 
 
 #endif

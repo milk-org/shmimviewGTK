@@ -76,7 +76,7 @@ add_compile_options(-pipe)
 
 
 ADD_EXECUTABLE(shmimview
-src/shmimview.c src/shmimview-view.c src/shmimview-scale.c src/shmimview-process.c shmimview-ui.c)
+src/shmimview.c src/shmimview-view.c src/shmimview-scale.c src/shmimview-zoom.c src/shmimview-process.c shmimview-ui.c)
 
 
 

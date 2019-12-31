@@ -549,6 +549,23 @@ void on_colormap_bry_toggled(
     }
 }
 
+void on_colormap_rgb_toggled(
+    GtkWidget      *widget,
+    __attribute__((unused)) void *data)
+{
+    gboolean T = gtk_check_menu_item_get_active ( GTK_CHECK_MENU_ITEM(widget) );
+    int viewindex = 0;
+
+    if (T) {
+        if(verbose) {
+            printf("color cool\n");
+        }
+        imdataview[viewindex].colormap = COLORMAP_RGB;
+        imdataview[viewindex].update = 1;
+    }
+}
+
+
 
 
 
