@@ -170,6 +170,8 @@ void PixVal_to_RGB(float pixval, guchar *rval, guchar *gval, guchar *bval)
 
 
 void free_viewpixels(guchar *pixels, __attribute__((unused)) gpointer data) {
+	int viewindex = 0;
+	imdataview[viewindex].allocated_viewpixels = 0;
     free(pixels);
 }
 
@@ -196,9 +198,23 @@ int resize_PixelBufferView(int xsize, int ysize)
 
     if(finit==1) // only do this on first call
     {
-        if(imdataview[viewindex].allocated_viewpixels == 1) {
-            free(imdataview[viewindex].viewpixels);
+        if(verbose) {
+            printf("[%d]\n", __LINE__);
+            fflush(stdout);
         }
+        if(imdataview[viewindex].allocated_viewpixels == 1) {
+            if(verbose) {
+                printf("[%d]\n", __LINE__);
+                fflush(stdout);
+            }
+            free(imdataview[viewindex].viewpixels);
+            imdataview[viewindex].allocated_viewpixels = 0;
+        }
+    }
+
+    if(verbose) {
+        printf("[%d]\n", __LINE__);
+        fflush(stdout);
     }
 
     imdataview[viewindex].viewpixels = calloc(imdataview[viewindex].viewYsize * imdataview[viewindex].stride, 1);
@@ -211,6 +227,7 @@ int resize_PixelBufferView(int xsize, int ysize)
         fflush(stdout);
     }
 
+
     imdataview[viewindex].pbview = gdk_pixbuf_new_from_data(
                                        imdataview[viewindex].viewpixels,
                                        GDK_COLORSPACE_RGB,     // colorspace
@@ -222,8 +239,9 @@ int resize_PixelBufferView(int xsize, int ysize)
                                        NULL                    // destroy_fn_data
                                    );
 
-    imdataview[viewindex].gtkimage = GTK_IMAGE(gtk_image_new_from_pixbuf(imdataview[viewindex].pbview));
 
+    imdataview[viewindex].gtkimage = GTK_IMAGE(gtk_image_new_from_pixbuf(imdataview[viewindex].pbview));
+    
     imdataview[viewindex].update = 1;
 
     if(verbose) {
@@ -243,9 +261,9 @@ int resize_PixelBufferView(int xsize, int ysize)
 int update_pic() {
     static unsigned long long imcnt0 = 0;
 
-    static guchar *Rarray;
-    static guchar *Garray;
-    static guchar *Barray;
+    static guchar *Rarray = NULL;
+    static guchar *Garray = NULL;
+    static guchar *Barray = NULL;
 
     int ii, jj;
 
@@ -290,6 +308,7 @@ int update_pic() {
 
 
 
+ 
     if(imindex != -1)
     {
 
@@ -469,13 +488,39 @@ int update_pic() {
 				}
 
                 imdataview[viewindex].computearray = (float*) malloc(sizeof(float) * imSize);
+                
+                if(Rarray != NULL) {
+					free(Rarray);
+					Rarray = NULL;
+				}
                 Rarray = (guchar*) malloc(sizeof(guchar) * imSize);
+                
+				if(Garray != NULL) {
+					free(Garray);
+					Garray = NULL;
+				}
                 Garray = (guchar*) malloc(sizeof(guchar) * imSize);
+                
+				if(Barray != NULL) {
+					free(Barray);
+					Barray = NULL;
+				}
                 Barray = (guchar*) malloc(sizeof(guchar) * imSize);
 
                 alloc_cnt += 1;
+                
+                if(imdataview[viewindex].PixelRaw_array != NULL) {
+					free(imdataview[viewindex].PixelRaw_array);
+					imdataview[viewindex].PixelRaw_array = NULL;
+				}
                 imdataview[viewindex].PixelRaw_array = (long*) malloc(sizeof(long) * viewXsize * viewYsize);
+                
+                if(imdataview[viewindex].PixelBuff_array != NULL) {
+					free(imdataview[viewindex].PixelBuff_array);
+					imdataview[viewindex].PixelBuff_array = NULL;
+				}
                 imdataview[viewindex].PixelBuff_array = (int*) malloc(sizeof(int) * viewXsize * viewYsize);
+                
                 imdataview[viewindex].computearrayinit = 1;
             } 
             else
@@ -488,22 +533,20 @@ int update_pic() {
                 if( (viewXsize != viewXsize_save)
                         || (viewYsize != viewYsize_save))
                 {
-                    if(verbose) {
-                        printf("------------ [%5d] %d alloc_cnt = %d\n", __LINE__, viewindex, alloc_cnt);
-                        fflush(stdout);
-                    }
 
-                    free(imdataview[viewindex].PixelRaw_array);
-                    if(verbose) {
-                        printf("------------ [%5d] %d alloc_cnt = %d\n", __LINE__, viewindex, alloc_cnt);
-                        fflush(stdout);
-                    }
+                    if(imdataview[viewindex].PixelRaw_array != NULL) {
+						free(imdataview[viewindex].PixelRaw_array);
+					}
                     imdataview[viewindex].PixelRaw_array = (long*) malloc(sizeof(long) * viewXsize * viewYsize);
+
                     if(verbose) {
                         printf("------------ [%5d]\n", __LINE__);
                         fflush(stdout);
                     }
-                    free(imdataview[viewindex].PixelBuff_array);
+
+					if(imdataview[viewindex].PixelBuff_array != NULL) {
+						free(imdataview[viewindex].PixelBuff_array);
+					}
                     imdataview[viewindex].PixelBuff_array = (int*) malloc(sizeof(int) * viewXsize * viewYsize);
 
                     alloc_cnt -= 1;
@@ -719,7 +762,7 @@ int update_pic() {
             // Recompute min and max scale if needed
             if(imdataview[viewindex].autominmax == 1)
             {
-                float *varray;
+                float *varray = NULL;
                 int nbpix;
 
                 nbpix = (imdataview[viewindex].iimax - imdataview[viewindex].iimin) * (imdataview[viewindex].jjmax - imdataview[viewindex].jjmin);
@@ -832,7 +875,6 @@ int update_pic() {
                 fflush(stdout);
             }
 
-            //gtk_image_set_from_pixbuf(GTK_IMAGE(imdataview[viewindex].gtkimage), pb);
             gtk_image_set_from_pixbuf(GTK_IMAGE(widgets->w_img_main), imdataview[viewindex].pbview);
 
             if(verbose) {
@@ -842,6 +884,9 @@ int update_pic() {
         }
         imdataview[viewindex].update = 0;
     }
+
+
+
 
     return TRUE;
 }

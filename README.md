@@ -32,3 +32,10 @@ View image:
 
 	./shmimview ims1
 
+
+
+## View modes
+
+Standard mode by default.
+
+Display map mode if stream <streamnam>_dispmap exists.
