@@ -375,7 +375,7 @@ gboolean on_imgareaeventbox_motion_notify_event(
         gtk_label_set_text ( GTK_LABEL(widgets->label_pixinfo), "");
     }
 
-
+	
 
     if(widgets->pressed_button1_status == 1) {
         float dx = event->x - widgets->pressed_pos_X;
@@ -383,6 +383,15 @@ gboolean on_imgareaeventbox_motion_notify_event(
         if(verbose) {
             printf("BT1 VECTOR : %f %f\n", dx, dy);
         }
+        
+        GtkAllocation alloc;
+        gtk_widget_get_allocation(widgets->imviewport, &alloc);
+        
+        if(verbose) {
+			printf("----- widget size is currently %d x %d\n", alloc.width, alloc.height);
+		}
+        
+        
         GtkAdjustment *hadj = gtk_scrollable_get_hadjustment(GTK_SCROLLABLE(widgets->imviewport));
         double hval = gtk_adjustment_get_value (hadj);
         double hval1 = hval - dx;
@@ -424,11 +433,15 @@ gboolean on_imgareaeventbox_button_release_event(
     GdkEventButton *event,
     __attribute__((unused)) void *data)
 {
+	 int viewindex = 0;
     /*    g_print ("Event button release at coordinates %f,%f\n",
                  event->x, event->y);
     	*/
 
     if ( (int)event->button == 1 ) {
+		imdataview[viewindex].update = 1;
+        imdataview[viewindex].update_minmax = 0;
+        		
         widgets->pressed_button1_status = 0;
     }
     if ( (int)event->button == 3 ) {

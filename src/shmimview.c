@@ -34,6 +34,10 @@ app_widgets *widgets;
 // Image viewing data
 IMAGEDATAVIEW *imdataview;
 
+// color map data
+COLORMAPDATA cmapdata;
+
+
 // Images
 char SHARED_MEMORY_DIRECTORY[200];
 IMAGE *imarray;
@@ -46,6 +50,109 @@ static gint zoom = 2;
 gboolean verbose = FALSE;
 
 
+
+
+static int precompute_cmap()
+{
+	int NBlevel = 65536;
+	
+    cmapdata.NBlevel = NBlevel; // 16 bit
+
+
+    // GREY (default)
+
+    cmapdata.COLORMAP_GREY_RVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
+    cmapdata.COLORMAP_GREY_GVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
+    cmapdata.COLORMAP_GREY_BVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
+
+    for(int clevel=0; clevel<NBlevel; clevel++) {
+        float pixval = 1.0*clevel/NBlevel;
+        cmapdata.COLORMAP_GREY_RVAL[clevel] = (unsigned char) (pixval*255);
+        cmapdata.COLORMAP_GREY_GVAL[clevel] = (unsigned char) (pixval*255);
+        cmapdata.COLORMAP_GREY_BVAL[clevel] = (unsigned char) (pixval*255);
+    }
+
+
+    // COOL
+
+    cmapdata.COLORMAP_COOL_RVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
+    cmapdata.COLORMAP_COOL_GVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
+    cmapdata.COLORMAP_COOL_BVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
+
+    for(int clevel=0; clevel<NBlevel; clevel++) {
+        float pixval = 1.0*clevel/NBlevel;
+        cmapdata.COLORMAP_COOL_RVAL[clevel] = (unsigned char) (pixval*pixval*255);
+        cmapdata.COLORMAP_COOL_GVAL[clevel] = (unsigned char) (pixval*sqrt(pixval)*255);
+        cmapdata.COLORMAP_COOL_BVAL[clevel] = (unsigned char) (sqrt(pixval)*255);
+    }
+
+
+
+    // HEAT
+
+    cmapdata.COLORMAP_HEAT_RVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
+    cmapdata.COLORMAP_HEAT_GVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
+    cmapdata.COLORMAP_HEAT_BVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
+
+    for(int clevel=0; clevel<NBlevel; clevel++) {
+        float pixval = 1.0*clevel/NBlevel;
+        cmapdata.COLORMAP_HEAT_RVAL[clevel] = (unsigned char) (sqrt(pixval)*255);;
+        cmapdata.COLORMAP_HEAT_GVAL[clevel] = (unsigned char) (pixval*sqrt(pixval)*255);
+        cmapdata.COLORMAP_HEAT_BVAL[clevel] = (unsigned char) (pixval*pixval*255);
+    }
+
+
+
+
+    // BRY
+
+    cmapdata.COLORMAP_BRY_RVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
+    cmapdata.COLORMAP_BRY_GVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
+    cmapdata.COLORMAP_BRY_BVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
+
+    float xlim = 0.25;
+    for(int clevel=0; clevel<NBlevel; clevel++) {
+        float pixval = 1.0*clevel/NBlevel;
+        if(pixval<xlim) {
+            cmapdata.COLORMAP_BRY_RVAL[clevel] = (unsigned char) 0;
+            cmapdata.COLORMAP_BRY_GVAL[clevel] = (unsigned char) 0;
+        }
+        else {
+            float x = (pixval-xlim)/(1.0-xlim);
+            float x2 = x*x;
+            cmapdata.COLORMAP_BRY_RVAL[clevel] = (unsigned char) ( sqrt(x) * 255);
+            cmapdata.COLORMAP_BRY_GVAL[clevel] = (unsigned char) ( x2 * 255);
+        }
+        cmapdata.COLORMAP_BRY_BVAL[clevel] = (unsigned char) ( (0.5-0.5*cos(pixval*M_PI*3)) * 255);
+    }
+
+
+
+    // RGB
+
+    cmapdata.COLORMAP_RGB_RVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
+    cmapdata.COLORMAP_RGB_GVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
+    cmapdata.COLORMAP_RGB_BVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
+
+    for(int clevel=0; clevel<NBlevel; clevel++) {
+        float pixval = 1.0*clevel/NBlevel;
+
+        if(pixval < 0.5) {
+            cmapdata.COLORMAP_RGB_RVAL[clevel] = (unsigned char) (255.0*(1.0-pixval*2.0));
+            cmapdata.COLORMAP_RGB_GVAL[clevel] = (unsigned char) (pixval*2.0*255);
+            cmapdata.COLORMAP_RGB_BVAL[clevel] = (unsigned char) (0);
+        }
+        else
+        {
+            cmapdata.COLORMAP_RGB_RVAL[clevel] = (unsigned char) (0);
+            cmapdata.COLORMAP_RGB_GVAL[clevel] = (unsigned char) (255.0*(2.0-pixval*2.0));
+            cmapdata.COLORMAP_RGB_BVAL[clevel] = (unsigned char) ((pixval-0.5)*2.0*255);
+        }
+        break;
+    }
+
+    return 0;
+}
 
 
 
@@ -180,6 +287,8 @@ int main(int argc, char *argv[])
     imdataview = (IMAGEDATAVIEW*) malloc(sizeof(IMAGEDATAVIEW)*NB_IMDATAVIEW_MAX);
     imarray = (IMAGE*) malloc(sizeof(IMAGE)*NB_IMAGES_MAX);
 
+	precompute_cmap();
+
     for(int i=0; i<NB_IMDATAVIEW_MAX; i++) {
 
         imdataview[i].dispmap = 0;
@@ -205,8 +314,13 @@ int main(int argc, char *argv[])
         imdataview[i].PixelRaw_array = NULL;
         imdataview[i].PixelBuff_array = NULL;
         
-    }
-
+        
+        // colormap
+        imdataview[i].COLORMAP_RVAL = cmapdata.COLORMAP_GREY_RVAL;
+        imdataview[i].COLORMAP_GVAL = cmapdata.COLORMAP_GREY_GVAL;
+        imdataview[i].COLORMAP_BVAL = cmapdata.COLORMAP_GREY_BVAL;
+        }
+        
 
     if(verbose) {
         printf("argc = %d\n", argc);
@@ -491,9 +605,9 @@ int open_shm_image(
         imdataview[viewindex].showsaturated_min = 0;
         imdataview[viewindex].showsaturated_max = 0;
         imdataview[viewindex].zoomFact = 1;
-        imdataview[viewindex].update = 1;
 
-        imdataview[viewindex].autominmax = 1;
+        imdataview[viewindex].update = 1;
+        imdataview[viewindex].update_minmax = 1;
 
         imdataview[viewindex].button1pressed = 0;
         imdataview[viewindex].button3pressed = 0;
@@ -540,6 +654,12 @@ int close_shm_image(int viewindex)
 			free(imdataview[viewindex].computearray);
 			imdataview[viewindex].computearray = NULL;
 		}
+		if(imdataview[viewindex].computearray16 != NULL) {
+			free(imdataview[viewindex].computearray16);
+			imdataview[viewindex].computearray16 = NULL;
+		}
+
+
 
 		if(imdataview[viewindex].PixelRaw_array != NULL) {
 			free(imdataview[viewindex].PixelRaw_array);

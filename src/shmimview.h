@@ -39,6 +39,36 @@
 
 
 
+
+typedef struct {
+	
+	int NBlevel;
+	
+	unsigned char * COLORMAP_GREY_RVAL;
+	unsigned char * COLORMAP_GREY_GVAL;
+	unsigned char * COLORMAP_GREY_BVAL;
+	
+	unsigned char * COLORMAP_HEAT_RVAL;
+	unsigned char * COLORMAP_HEAT_GVAL;
+	unsigned char * COLORMAP_HEAT_BVAL;	
+	
+	unsigned char * COLORMAP_COOL_RVAL;
+	unsigned char * COLORMAP_COOL_GVAL;
+	unsigned char * COLORMAP_COOL_BVAL;
+	
+	unsigned char * COLORMAP_BRY_RVAL;
+	unsigned char * COLORMAP_BRY_GVAL;
+	unsigned char * COLORMAP_BRY_BVAL;
+	
+	unsigned char * COLORMAP_RGB_RVAL;
+	unsigned char * COLORMAP_RGB_GVAL;
+	unsigned char * COLORMAP_RGB_BVAL;
+	
+} COLORMAPDATA;
+
+
+
+
 // GTK widget pointers
 
 typedef struct {
@@ -122,7 +152,8 @@ typedef struct {
 	GtkImage *gtkimage;
 
 	int computearrayinit;
-	float* computearray; // compute array - same size as image. This is where pixel computations are done
+	float *    computearray;   // compute array - same size as image. This is where pixel computations are done
+	uint16_t * computearray16; // 16-bit mapped computearray
 
 
 	float pointerXpos; // current X position (image pixel unit)
@@ -191,7 +222,15 @@ typedef struct {
 	float scale_range_perc;    // percentile for min/max
 	float vmin, vmax;                           // min and max scale vales
 	
+	
+	// COLORMAP
+	
 	int colormap;
+	
+	unsigned char * COLORMAP_RVAL;
+	unsigned char * COLORMAP_GVAL;
+	unsigned char * COLORMAP_BVAL;
+	
 	
 	
 	float bscale_slope;
@@ -223,9 +262,9 @@ typedef struct {
 
 	int showsaturated_min;
 	int showsaturated_max;
-	int autominmax;
 
 	int update;
+	int update_minmax;
 
 } IMAGEDATAVIEW;
 
