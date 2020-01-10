@@ -52,35 +52,49 @@ gboolean verbose = FALSE;
 
 
 
-static int precompute_cmap()
-{
-	int NBlevel = 65536;
-	
-    cmapdata.NBlevel = NBlevel; // 16 bit
 
+int precompute_cmap()
+{
+    int NBlevel = 65536;
+
+    static int cmap_init = 0;
+
+
+    cmapdata.NBlevel = NBlevel; // 16 bit
+    int viewindex = 0;
 
     // GREY (default)
 
-    cmapdata.COLORMAP_GREY_RVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
-    cmapdata.COLORMAP_GREY_GVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
-    cmapdata.COLORMAP_GREY_BVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
+    if ( cmap_init == 0 ) {
+        cmapdata.COLORMAP_GREY_RVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
+        cmapdata.COLORMAP_GREY_GVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
+        cmapdata.COLORMAP_GREY_BVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
+    }
 
     for(int clevel=0; clevel<NBlevel; clevel++) {
         float pixval = 1.0*clevel/NBlevel;
+
+        pixval = imdataview[viewindex].scalefunc( pixval, imdataview[viewindex].scale_coeff);
+
         cmapdata.COLORMAP_GREY_RVAL[clevel] = (unsigned char) (pixval*255);
         cmapdata.COLORMAP_GREY_GVAL[clevel] = (unsigned char) (pixval*255);
         cmapdata.COLORMAP_GREY_BVAL[clevel] = (unsigned char) (pixval*255);
     }
 
 
-    // COOL
 
-    cmapdata.COLORMAP_COOL_RVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
-    cmapdata.COLORMAP_COOL_GVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
-    cmapdata.COLORMAP_COOL_BVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
+    // COOL
+    if ( cmap_init == 0 ) {
+        cmapdata.COLORMAP_COOL_RVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
+        cmapdata.COLORMAP_COOL_GVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
+        cmapdata.COLORMAP_COOL_BVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
+    }
 
     for(int clevel=0; clevel<NBlevel; clevel++) {
         float pixval = 1.0*clevel/NBlevel;
+
+        pixval = imdataview[viewindex].scalefunc( pixval, imdataview[viewindex].scale_coeff);
+
         cmapdata.COLORMAP_COOL_RVAL[clevel] = (unsigned char) (pixval*pixval*255);
         cmapdata.COLORMAP_COOL_GVAL[clevel] = (unsigned char) (pixval*sqrt(pixval)*255);
         cmapdata.COLORMAP_COOL_BVAL[clevel] = (unsigned char) (sqrt(pixval)*255);
@@ -89,13 +103,17 @@ static int precompute_cmap()
 
 
     // HEAT
-
-    cmapdata.COLORMAP_HEAT_RVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
-    cmapdata.COLORMAP_HEAT_GVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
-    cmapdata.COLORMAP_HEAT_BVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
+    if ( cmap_init == 0 ) {
+        cmapdata.COLORMAP_HEAT_RVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
+        cmapdata.COLORMAP_HEAT_GVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
+        cmapdata.COLORMAP_HEAT_BVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
+    }
 
     for(int clevel=0; clevel<NBlevel; clevel++) {
         float pixval = 1.0*clevel/NBlevel;
+
+        pixval = imdataview[viewindex].scalefunc( pixval, imdataview[viewindex].scale_coeff);
+
         cmapdata.COLORMAP_HEAT_RVAL[clevel] = (unsigned char) (sqrt(pixval)*255);;
         cmapdata.COLORMAP_HEAT_GVAL[clevel] = (unsigned char) (pixval*sqrt(pixval)*255);
         cmapdata.COLORMAP_HEAT_BVAL[clevel] = (unsigned char) (pixval*pixval*255);
@@ -104,15 +122,21 @@ static int precompute_cmap()
 
 
 
-    // BRY
 
-    cmapdata.COLORMAP_BRY_RVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
-    cmapdata.COLORMAP_BRY_GVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
-    cmapdata.COLORMAP_BRY_BVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
+
+    // BRY
+    if ( cmap_init == 0 ) {
+        cmapdata.COLORMAP_BRY_RVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
+        cmapdata.COLORMAP_BRY_GVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
+        cmapdata.COLORMAP_BRY_BVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
+    }
 
     float xlim = 0.25;
     for(int clevel=0; clevel<NBlevel; clevel++) {
         float pixval = 1.0*clevel/NBlevel;
+
+        pixval = imdataview[viewindex].scalefunc( pixval, imdataview[viewindex].scale_coeff);
+
         if(pixval<xlim) {
             cmapdata.COLORMAP_BRY_RVAL[clevel] = (unsigned char) 0;
             cmapdata.COLORMAP_BRY_GVAL[clevel] = (unsigned char) 0;
@@ -128,17 +152,24 @@ static int precompute_cmap()
 
 
 
-    // RGB
 
-    cmapdata.COLORMAP_RGB_RVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
-    cmapdata.COLORMAP_RGB_GVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
-    cmapdata.COLORMAP_RGB_BVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
+
+
+
+    // RGB
+    if ( cmap_init == 0 ) {
+        cmapdata.COLORMAP_RGB_RVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
+        cmapdata.COLORMAP_RGB_GVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
+        cmapdata.COLORMAP_RGB_BVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
+    }
 
     for(int clevel=0; clevel<NBlevel; clevel++) {
         float pixval = 1.0*clevel/NBlevel;
 
+        pixval = imdataview[viewindex].scalefunc( pixval, imdataview[viewindex].scale_coeff);
+
         if(pixval < 0.5) {
-            cmapdata.COLORMAP_RGB_RVAL[clevel] = (unsigned char) (255.0*(1.0-pixval*2.0));
+            cmapdata.COLORMAP_RGB_RVAL[clevel] = (unsigned char) ( 255.0 * (1.0-4.0*fabs(pixval-0.25)) );
             cmapdata.COLORMAP_RGB_GVAL[clevel] = (unsigned char) (pixval*2.0*255);
             cmapdata.COLORMAP_RGB_BVAL[clevel] = (unsigned char) (0);
         }
@@ -148,8 +179,11 @@ static int precompute_cmap()
             cmapdata.COLORMAP_RGB_GVAL[clevel] = (unsigned char) (255.0*(2.0-pixval*2.0));
             cmapdata.COLORMAP_RGB_BVAL[clevel] = (unsigned char) ((pixval-0.5)*2.0*255);
         }
-        break;
+
     }
+
+
+    cmap_init = 1;
 
     return 0;
 }
@@ -287,7 +321,6 @@ int main(int argc, char *argv[])
     imdataview = (IMAGEDATAVIEW*) malloc(sizeof(IMAGEDATAVIEW)*NB_IMDATAVIEW_MAX);
     imarray = (IMAGE*) malloc(sizeof(IMAGE)*NB_IMAGES_MAX);
 
-	precompute_cmap();
 
     for(int i=0; i<NB_IMDATAVIEW_MAX; i++) {
 
@@ -309,18 +342,24 @@ int main(int argc, char *argv[])
         imdataview[i].view_pixinfo    = 0;
         imdataview[i].view_imstat     = 0;
         imdataview[i].view_timing     = 0;
-        
+
         imdataview[i].viewpixels = NULL;
         imdataview[i].PixelRaw_array = NULL;
         imdataview[i].PixelBuff_array = NULL;
-        
-        
+    }
+
+
+
+    precompute_cmap();
+    for(int i=0; i<NB_IMDATAVIEW_MAX; i++) {
         // colormap
         imdataview[i].COLORMAP_RVAL = cmapdata.COLORMAP_GREY_RVAL;
         imdataview[i].COLORMAP_GVAL = cmapdata.COLORMAP_GREY_GVAL;
         imdataview[i].COLORMAP_BVAL = cmapdata.COLORMAP_GREY_BVAL;
-        }
-        
+	}
+
+
+
 
     if(verbose) {
         printf("argc = %d\n", argc);
@@ -628,67 +667,67 @@ int close_shm_image(int viewindex)
     if(verbose) {
         printf("  imindex = %d\n", imdataview[viewindex].imindex);
     }
-    
-    
+
+
     if(imdataview[viewindex].imindex != -1)
     {
 
         if(verbose) {
-			printf("CLEAR viewindex = %d\n", viewindex);
+            printf("CLEAR viewindex = %d\n", viewindex);
             fflush(stdout);
         }
 
         g_object_unref (imdataview[viewindex].pbview);
 
-		
-		if(verbose) {
-			printf("[%d] %s\n", __LINE__, __FILE__);
-			fflush(stdout);
-		}
-		
-       // gtk_image_clear (imdataview[viewindex].gtkimage);
+
+        if(verbose) {
+            printf("[%d] %s\n", __LINE__, __FILE__);
+            fflush(stdout);
+        }
+
+        // gtk_image_clear (imdataview[viewindex].gtkimage);
 
         imdataview[viewindex].computearrayinit = 0;
 
-		if(imdataview[viewindex].computearray != NULL) {
-			free(imdataview[viewindex].computearray);
-			imdataview[viewindex].computearray = NULL;
-		}
-		if(imdataview[viewindex].computearray16 != NULL) {
-			free(imdataview[viewindex].computearray16);
-			imdataview[viewindex].computearray16 = NULL;
-		}
+        if(imdataview[viewindex].computearray != NULL) {
+            free(imdataview[viewindex].computearray);
+            imdataview[viewindex].computearray = NULL;
+        }
+        if(imdataview[viewindex].computearray16 != NULL) {
+            free(imdataview[viewindex].computearray16);
+            imdataview[viewindex].computearray16 = NULL;
+        }
 
 
 
-		if(imdataview[viewindex].PixelRaw_array != NULL) {
-			free(imdataview[viewindex].PixelRaw_array);
-			imdataview[viewindex].PixelRaw_array = NULL;
-		}
-		
-		if(imdataview[viewindex].PixelBuff_array != NULL) {
-			free(imdataview[viewindex].PixelBuff_array);
-			imdataview[viewindex].PixelBuff_array = NULL;
-		}
+        if(imdataview[viewindex].PixelRaw_array != NULL) {
+            free(imdataview[viewindex].PixelRaw_array);
+            imdataview[viewindex].PixelRaw_array = NULL;
+        }
+
+        if(imdataview[viewindex].PixelBuff_array != NULL) {
+            free(imdataview[viewindex].PixelBuff_array);
+            imdataview[viewindex].PixelBuff_array = NULL;
+        }
 
 
 
 
-		if(verbose) {
-			printf("[%d] %s\n", __LINE__, __FILE__);
-			fflush(stdout);
-		}
-		
-		if(imdataview[viewindex].imindex != -1) {
-			ImageStreamIO_closeIm( &imarray[imdataview[viewindex].imindex] );
-			imdataview[viewindex].imindex = -1;
-		}
+        if(verbose) {
+            printf("[%d] %s\n", __LINE__, __FILE__);
+            fflush(stdout);
+        }
 
-		if(verbose) {
-			printf("[%d] %s\n", __LINE__, __FILE__);
-			fflush(stdout);
-		}
-		
+        if(imdataview[viewindex].imindex != -1) {
+            ImageStreamIO_closeIm( &imarray[imdataview[viewindex].imindex] );
+            imdataview[viewindex].imindex = -1;
+        }
+
+        if(verbose) {
+            printf("[%d] %s\n", __LINE__, __FILE__);
+            fflush(stdout);
+        }
+
 
         //imdataview[viewindex].gtkimage = GTK_IMAGE(gtk_image_new_from_file ("./empty.png"));
         //gtk_image_set_from_file (imdataview[viewindex].gtkimage, "empty.png");

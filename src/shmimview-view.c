@@ -336,29 +336,151 @@ gboolean on_imgareaeventbox_motion_notify_event(
         ii = (int) (pixXpos+0.5);
         jj = (int) (pixYpos+0.5);
         int imindex = imdataview[viewindex].imindex;
-		int imindexdisp = imdataview[viewindex].dispmap_imindex;
+        int imindexdisp = imdataview[viewindex].dispmap_imindex;
 
         if( (ii>-1) && (ii<imdataview[viewindex].xsizedisp) && (jj>-1) && (jj<imdataview[viewindex].ysizedisp)) {
-            if(imdataview[viewindex].dispmap == 1) 
+            if(imdataview[viewindex].dispmap == 1)
             {
-				int zone = imarray[imindexdisp].array.SI32[jj*imdataview[viewindex].xsizedisp+ii];
-				pixval = imarray[imindex].array.F[zone];
-				sprintf(string_pixinfo, "%8.1f %8.1f\npixval[%d] = %.2g",
-                    pixXpos,
-                    pixYpos,
-                    zone,
-                    pixval);
-			}
-			else
-			{
-				pixval = imarray[imindex].array.F[jj*imdataview[viewindex].xsize+ii];
-				sprintf(string_pixinfo, "%8.1f %8.1f\npixval = %.2g",
-                    pixXpos,
-                    pixYpos,
-                    pixval);
-			}
-            
-            
+                int zone = imarray[imindexdisp].array.SI32[jj*imdataview[viewindex].xsizedisp+ii];
+
+                switch ( imarray[imindex].md[0].datatype )
+                {
+                case _DATATYPE_FLOAT:
+                    pixval = imarray[imindex].array.F[zone];
+                    break;
+
+                case _DATATYPE_DOUBLE:
+                    pixval = imarray[imindex].array.D[zone];
+                    break;
+
+                case _DATATYPE_UINT8:
+                    pixval = (float) imarray[imindex].array.UI8[zone];
+                    break;
+
+                case _DATATYPE_UINT16:
+                    pixval = (float) imarray[imindex].array.UI16[zone];
+                    break;
+
+                case _DATATYPE_UINT32:
+                    pixval = (float) imarray[imindex].array.UI32[zone];
+                    break;
+
+                case _DATATYPE_UINT64:
+                    pixval = (float) imarray[imindex].array.UI64[zone];
+                    break;
+
+
+                case _DATATYPE_INT8:
+                    pixval = (float) imarray[imindex].array.SI8[zone];
+                    break;
+
+                case _DATATYPE_INT16:
+                    pixval = (float) imarray[imindex].array.SI16[zone];
+                    break;
+
+                case _DATATYPE_INT32:
+                    pixval = (float) imarray[imindex].array.SI32[zone];
+                    break;
+
+                case _DATATYPE_INT64:
+                    pixval = (float) imarray[imindex].array.SI64[zone];
+                    break;
+                }
+             
+                sprintf(string_pixinfo, "%8.1f %8.1f\npixval[%d] = %.3g",
+                        pixXpos,
+                        pixYpos,
+                        zone,
+                        pixval);
+            }
+            else
+            {
+				switch ( imarray[imindex].md[0].datatype )
+                {
+                case _DATATYPE_FLOAT:
+                    pixval = imarray[imindex].array.F[jj*imdataview[viewindex].xsize+ii];
+                    sprintf(string_pixinfo, "%8.1f %8.1f\npixval = %.3g",
+                        pixXpos,
+                        pixYpos,
+                        pixval);
+                    break;
+
+                case _DATATYPE_DOUBLE:
+                    pixval = imarray[imindex].array.D[jj*imdataview[viewindex].xsize+ii];
+                    sprintf(string_pixinfo, "%8.1f %8.1f\npixval = %.3g",
+                        pixXpos,
+                        pixYpos,
+                        pixval);
+                    break;
+
+                case _DATATYPE_UINT8:
+                    pixval = (float) imarray[imindex].array.UI8[jj*imdataview[viewindex].xsize+ii];
+                    sprintf(string_pixinfo, "%8.1f %8.1f\npixval = %d",
+                        pixXpos,
+                        pixYpos,
+                        imarray[imindex].array.UI8[jj*imdataview[viewindex].xsize+ii]);
+                    break;
+
+                case _DATATYPE_UINT16:
+                    pixval = (float) imarray[imindex].array.UI16[jj*imdataview[viewindex].xsize+ii];
+                    sprintf(string_pixinfo, "%8.1f %8.1f\npixval = %d",
+                        pixXpos,
+                        pixYpos,
+                        imarray[imindex].array.UI16[jj*imdataview[viewindex].xsize+ii]);
+                    break;
+
+                case _DATATYPE_UINT32:
+                    pixval = (float) imarray[imindex].array.UI32[jj*imdataview[viewindex].xsize+ii];
+                        sprintf(string_pixinfo, "%8.1f %8.1f\npixval = %d",
+                        pixXpos,
+                        pixYpos,
+                        imarray[imindex].array.UI32[jj*imdataview[viewindex].xsize+ii]);                
+                    break;
+
+                case _DATATYPE_UINT64:
+                    pixval = (float) imarray[imindex].array.UI64[jj*imdataview[viewindex].xsize+ii];
+                                            sprintf(string_pixinfo, "%8.1f %8.1f\npixval = %ld",
+                        pixXpos,
+                        pixYpos,
+                        imarray[imindex].array.UI64[jj*imdataview[viewindex].xsize+ii]);  
+                    break;
+
+
+                case _DATATYPE_INT8:
+                    pixval = (float) imarray[imindex].array.SI8[jj*imdataview[viewindex].xsize+ii];
+                    sprintf(string_pixinfo, "%8.1f %8.1f\npixval = %d",
+                        pixXpos,
+                        pixYpos,
+                        imarray[imindex].array.SI8[jj*imdataview[viewindex].xsize+ii]);
+                    break;
+
+                case _DATATYPE_INT16:
+                    pixval = (float) imarray[imindex].array.SI16[jj*imdataview[viewindex].xsize+ii];
+                    sprintf(string_pixinfo, "%8.1f %8.1f\npixval = %d",
+                        pixXpos,
+                        pixYpos,
+                        imarray[imindex].array.SI16[jj*imdataview[viewindex].xsize+ii]);
+                    break;
+
+                case _DATATYPE_INT32:
+                    pixval = (float) imarray[imindex].array.SI32[jj*imdataview[viewindex].xsize+ii];
+                    sprintf(string_pixinfo, "%8.1f %8.1f\npixval = %d",
+                        pixXpos,
+                        pixYpos,
+                        imarray[imindex].array.SI32[jj*imdataview[viewindex].xsize+ii]);
+                    break;
+
+                case _DATATYPE_INT64:
+                    pixval = (float) imarray[imindex].array.SI64[jj*imdataview[viewindex].xsize+ii];
+                    sprintf(string_pixinfo, "%8.1f %8.1f\npixval = %ld",
+                        pixXpos,
+                        pixYpos,
+                        imarray[imindex].array.SI64[jj*imdataview[viewindex].xsize+ii]);
+                    break;
+                }
+            }
+
+
 
             imdataview[viewindex].pointerXpos = pixXpos;
             imdataview[viewindex].pointerYpos = pixYpos;
@@ -375,23 +497,23 @@ gboolean on_imgareaeventbox_motion_notify_event(
         gtk_label_set_text ( GTK_LABEL(widgets->label_pixinfo), "");
     }
 
-	
+
 
     if(widgets->pressed_button1_status == 1) {
         float dx = event->x - widgets->pressed_pos_X;
-        float dy = event->y - widgets->pressed_pos_Y;		
+        float dy = event->y - widgets->pressed_pos_Y;
         if(verbose) {
             printf("BT1 VECTOR : %f %f\n", dx, dy);
         }
-        
+
         GtkAllocation alloc;
         gtk_widget_get_allocation(widgets->imviewport, &alloc);
-        
+
         if(verbose) {
-			printf("----- widget size is currently %d x %d\n", alloc.width, alloc.height);
-		}
-        
-        
+            printf("----- widget size is currently %d x %d\n", alloc.width, alloc.height);
+        }
+
+
         GtkAdjustment *hadj = gtk_scrollable_get_hadjustment(GTK_SCROLLABLE(widgets->imviewport));
         double hval = gtk_adjustment_get_value (hadj);
         double hval1 = hval - dx;
@@ -412,15 +534,15 @@ gboolean on_imgareaeventbox_motion_notify_event(
 
     if(widgets->pressed_button3_status == 1) {
         float dx = event->x - widgets->pressed_pos_X;
-        float dy = event->y - widgets->pressed_pos_Y;	
+        float dy = event->y - widgets->pressed_pos_Y;
         if(verbose) {
             printf("BT3 VECTOR : %f %f\n", dx, dy);
         }
-        
+
         imdataview[viewindex].bscale_center = imdataview[viewindex].bscale_center_ref + dx / imdataview[viewindex].viewXsize;
-        imdataview[viewindex].bscale_slope = imdataview[viewindex].bscale_slope_ref + dy / imdataview[viewindex].viewYsize; 
+        imdataview[viewindex].bscale_slope = imdataview[viewindex].bscale_slope_ref + dy / imdataview[viewindex].viewYsize;
         imdataview[viewindex].update = 1;
-	}
+    }
 
 
     return TRUE;
@@ -433,15 +555,15 @@ gboolean on_imgareaeventbox_button_release_event(
     GdkEventButton *event,
     __attribute__((unused)) void *data)
 {
-	 int viewindex = 0;
+    int viewindex = 0;
     /*    g_print ("Event button release at coordinates %f,%f\n",
                  event->x, event->y);
     	*/
 
     if ( (int)event->button == 1 ) {
-		imdataview[viewindex].update = 1;
+        imdataview[viewindex].update = 1;
         imdataview[viewindex].update_minmax = 0;
-        		
+
         widgets->pressed_button1_status = 0;
     }
     if ( (int)event->button == 3 ) {

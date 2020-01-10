@@ -133,6 +133,7 @@ void on_scale_log4_toggled(
         imdataview[viewindex].scale_type = SCALE_LOG;
         imdataview[viewindex].scalefunc = *scalefunction_log;
         imdataview[viewindex].scale_coeff = 0.0001;
+        precompute_cmap();
         imdataview[viewindex].update = 1;
     }
 }
@@ -153,6 +154,7 @@ void on_scale_log3_toggled(
         imdataview[viewindex].scale_type = SCALE_LOG;
         imdataview[viewindex].scalefunc = *scalefunction_log;
         imdataview[viewindex].scale_coeff = 0.001;
+        precompute_cmap();
         imdataview[viewindex].update = 1;
     }
 }
@@ -172,6 +174,7 @@ void on_scale_log2_toggled(
         imdataview[viewindex].scale_type = SCALE_LOG;
         imdataview[viewindex].scalefunc = *scalefunction_log;
         imdataview[viewindex].scale_coeff = 0.01;
+        precompute_cmap();
         imdataview[viewindex].update = 1;
     }
 }
@@ -190,6 +193,7 @@ void on_scale_log1_toggled(
         imdataview[viewindex].scale_type = SCALE_LOG;
         imdataview[viewindex].scalefunc = *scalefunction_log;
         imdataview[viewindex].scale_coeff = 0.1;
+        precompute_cmap();
         imdataview[viewindex].update = 1;
     }
 }
@@ -210,6 +214,7 @@ void on_scale_linear_toggled(
         }
         imdataview[viewindex].scale_type = SCALE_LINEAR;
         imdataview[viewindex].scalefunc = *scalefunction_linear;
+        precompute_cmap();
         imdataview[viewindex].update = 1;
     }
 }
@@ -228,6 +233,7 @@ void on_scale_power01_toggled(
         imdataview[viewindex].scale_type = SCALE_POWER;
         imdataview[viewindex].scalefunc = *scalefunction_power;
         imdataview[viewindex].scale_coeff = 0.1;
+        precompute_cmap();
         imdataview[viewindex].update = 1;
     }
 }
@@ -247,6 +253,7 @@ void on_scale_power02_toggled(
         imdataview[viewindex].scale_type = SCALE_POWER;
         imdataview[viewindex].scalefunc = *scalefunction_power;
         imdataview[viewindex].scale_coeff = 0.2;
+        precompute_cmap();
         imdataview[viewindex].update = 1;
     }
 }
@@ -265,6 +272,7 @@ void on_scale_power05_toggled(
         }
         imdataview[viewindex].scale_type = SCALE_SQRT;
         imdataview[viewindex].scalefunc = *scalefunction_sqrt;
+        precompute_cmap();
         imdataview[viewindex].update = 1;
     }
 }
@@ -283,6 +291,7 @@ void on_scale_power20_toggled(
         }
         imdataview[viewindex].scale_type = SCALE_SQUARE;
         imdataview[viewindex].scalefunc = *scalefunction_square;
+        precompute_cmap();
         imdataview[viewindex].update = 1;
     }
 }
@@ -301,6 +310,7 @@ void on_scale_power40_toggled(
         }
         imdataview[viewindex].scale_type = SCALE_POW4;
         imdataview[viewindex].scalefunc = *scalefunction_pow4;
+        precompute_cmap();
         imdataview[viewindex].update = 1;
     }
 }
@@ -319,7 +329,8 @@ void on_scale_power80_toggled(
         }
         imdataview[viewindex].scale_type = SCALE_POW8;
         imdataview[viewindex].scalefunc = *scalefunction_pow8;
-        imdataview[viewindex].update = 1;
+precompute_cmap();
+        imdataview[viewindex].update = 1;        
     }
 }
 

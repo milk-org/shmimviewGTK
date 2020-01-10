@@ -86,46 +86,8 @@ typedef struct {
 	GtkWidget *label_timing;
 	
 
-
     GtkWidget *w_img_main;              // Pointer to image widget
 
-
-	// zoom
-/*	GtkWidget *zoombin4;
-	GtkWidget *zoombin2;
-	GtkWidget *zoom1;
-	GtkWidget *zoom2;
-	GtkWidget *zoom4;
-	GtkWidget *zoom8;
-	
-*/
-
-    // Intensity scale
-/*    GtkWidget *scale_log1;
-    GtkWidget *scale_log2;
-    GtkWidget *scale_log3;
-    GtkWidget *scale_log4;
-    GtkWidget *scale_power01;
-    GtkWidget *scale_power02;
-    GtkWidget *scale_power05;
-    GtkWidget *scale_linear;
-    GtkWidget *scale_power20;
-    GtkWidget *scale_power40;
-    GtkWidget *scale_power80;
-
-    GtkWidget *scale_rangeminmax;
-    GtkWidget *scale_range005;
-    GtkWidget *scale_range01;
-    GtkWidget *scale_range02;
-    GtkWidget *scale_range03;
-    GtkWidget *scale_range05;
-    GtkWidget *scale_range10;
-    GtkWidget *scale_range20;
-
-    GtkWidget *colormap_grey;
-    GtkWidget *colormap_heat;
-    GtkWidget *colormap_cool;
-*/
 	int pressed_button1_status;
 	int pressed_button3_status;
 	float pressed_pos_X;
@@ -276,7 +238,7 @@ typedef struct {
 
 
 
-
+int precompute_cmap();
 int open_shm_image(char *streamname, int index);
 int close_shm_image(int viewindex);
 

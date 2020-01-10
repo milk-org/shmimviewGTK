@@ -54,7 +54,7 @@ int floatcompare (const void * a, const void * b)
 
 
 // colormap functions
-
+/*
 static void colormap_RGBval (
     float pixval,
     unsigned char *Rval,
@@ -120,9 +120,9 @@ static void colormap_RGBval (
 
 
 
+*/
 
-
-
+/*
 void PixVal_to_RGB(float pixval, guchar *rval, guchar *gval, guchar *bval)
 {
     float pixval1;
@@ -167,7 +167,7 @@ void PixVal_to_RGB(float pixval, guchar *rval, guchar *gval, guchar *bval)
     }
 
 }
-
+*/
 
 
 
