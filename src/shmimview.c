@@ -57,20 +57,16 @@ int precompute_cmap()
 {
     int NBlevel = 65536;
 
-    static int cmap_init = 0;
-
-
     cmapdata.NBlevel = NBlevel; // 16 bit
     int viewindex = 0;
 
-    // GREY (default)
 
-    if ( cmap_init == 0 ) {
+    // GREY (default)
+    if ( cmapdata.colormapinit == 0 ) {
         cmapdata.COLORMAP_GREY_RVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
         cmapdata.COLORMAP_GREY_GVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
-        cmapdata.COLORMAP_GREY_BVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
+        cmapdata.COLORMAP_GREY_BVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);        
     }
-
     for(int clevel=0; clevel<NBlevel; clevel++) {
         float pixval = 1.0*clevel/NBlevel;
 
@@ -84,12 +80,11 @@ int precompute_cmap()
 
 
     // COOL
-    if ( cmap_init == 0 ) {
+    if ( cmapdata.colormapinit == 0 ) {
         cmapdata.COLORMAP_COOL_RVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
         cmapdata.COLORMAP_COOL_GVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
-        cmapdata.COLORMAP_COOL_BVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
+        cmapdata.COLORMAP_COOL_BVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);        
     }
-
     for(int clevel=0; clevel<NBlevel; clevel++) {
         float pixval = 1.0*clevel/NBlevel;
 
@@ -103,12 +98,11 @@ int precompute_cmap()
 
 
     // HEAT
-    if ( cmap_init == 0 ) {
+    if ( cmapdata.colormapinit == 0 ) {
         cmapdata.COLORMAP_HEAT_RVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
         cmapdata.COLORMAP_HEAT_GVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
-        cmapdata.COLORMAP_HEAT_BVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
+        cmapdata.COLORMAP_HEAT_BVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);        
     }
-
     for(int clevel=0; clevel<NBlevel; clevel++) {
         float pixval = 1.0*clevel/NBlevel;
 
@@ -122,15 +116,12 @@ int precompute_cmap()
 
 
 
-
-
     // BRY
-    if ( cmap_init == 0 ) {
+    if ( cmapdata.colormapinit == 0 ) {
         cmapdata.COLORMAP_BRY_RVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
         cmapdata.COLORMAP_BRY_GVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
-        cmapdata.COLORMAP_BRY_BVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
-    }
-
+        cmapdata.COLORMAP_BRY_BVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);        
+    }    
     float xlim = 0.25;
     for(int clevel=0; clevel<NBlevel; clevel++) {
         float pixval = 1.0*clevel/NBlevel;
@@ -154,15 +145,12 @@ int precompute_cmap()
 
 
 
-
-
     // RGB
-    if ( cmap_init == 0 ) {
+    if ( cmapdata.colormapinit == 0 ) {
         cmapdata.COLORMAP_RGB_RVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
         cmapdata.COLORMAP_RGB_GVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
-        cmapdata.COLORMAP_RGB_BVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
-    }
-
+        cmapdata.COLORMAP_RGB_BVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);        
+    }    
     for(int clevel=0; clevel<NBlevel; clevel++) {
         float pixval = 1.0*clevel/NBlevel;
 
@@ -183,10 +171,38 @@ int precompute_cmap()
     }
 
 
-    cmap_init = 1;
+	cmapdata.colormapinit = 1;
 
     return 0;
 }
+
+
+
+int free_cmap()
+{
+	free(cmapdata.COLORMAP_GREY_RVAL);
+	free(cmapdata.COLORMAP_GREY_GVAL);
+	free(cmapdata.COLORMAP_GREY_BVAL);
+	
+	free(cmapdata.COLORMAP_COOL_RVAL);
+	free(cmapdata.COLORMAP_COOL_GVAL);
+	free(cmapdata.COLORMAP_COOL_BVAL);
+
+	free(cmapdata.COLORMAP_HEAT_RVAL);
+	free(cmapdata.COLORMAP_HEAT_GVAL);
+	free(cmapdata.COLORMAP_HEAT_BVAL);	
+
+	free(cmapdata.COLORMAP_BRY_RVAL);
+	free(cmapdata.COLORMAP_BRY_GVAL);
+	free(cmapdata.COLORMAP_BRY_BVAL);	
+
+	free(cmapdata.COLORMAP_RGB_RVAL);
+	free(cmapdata.COLORMAP_RGB_GVAL);
+	free(cmapdata.COLORMAP_RGB_BVAL);	
+	
+	return 0;
+}
+
 
 
 
@@ -266,6 +282,7 @@ int get_shmimdir(char *shmdirname)
         }
     }
 
+	return 0;
 }
 
 
@@ -274,7 +291,7 @@ int get_shmimdir(char *shmdirname)
 
 static GOptionEntry entries[] =
 {
-    { "zoom", 'z', 0, G_OPTION_ARG_INT, &zoom, "Zoom", "Z" },
+    { "zoom", 'z',    0, G_OPTION_ARG_INT,  &zoom,    "Zoom",       "Z" },
     { "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose, "Be verbose", NULL },
     { NULL }
 };
@@ -285,7 +302,7 @@ static GOptionEntry entries[] =
 int main(int argc, char *argv[])
 {
     GtkBuilder      *builder;
-    GError *error = NULL;
+    GError          *error = NULL;
     GOptionContext *context;
 
     setlocale (LC_ALL, "");
@@ -295,14 +312,23 @@ int main(int argc, char *argv[])
 
 
     printf("SHMIM viewer version %d.%d.%d\n", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+    
+    
+    
+    imarray = (IMAGE*) malloc(sizeof(IMAGE)*NB_IMAGES_MAX);
+	for(int imindex = 0; imindex < NB_IMAGES_MAX; imindex++) {
+		imarray[imindex].used = 0;
+	}
 
     char shmdirname[200];
     get_shmimdir(shmdirname);
     strcpy(SHARED_MEMORY_DIRECTORY, shmdirname);
 
     context = g_option_context_new ("- view milk shared memory image stream");
+            
     g_option_context_add_main_entries (context, entries, GETTEXT_PACKAGE);
     g_option_context_add_group (context, gtk_get_option_group (TRUE));
+    
     if (!g_option_context_parse (context, &argc, &argv, &error))
     {
         g_print ("option parsing failed: %s\n", error->message);
@@ -313,49 +339,54 @@ int main(int argc, char *argv[])
         printf("zoom = %d\n", zoom);
     }
 
+	g_option_context_free (context);
 
 
 
-    widgets = g_slice_new(app_widgets);
 
-    imdataview = (IMAGEDATAVIEW*) malloc(sizeof(IMAGEDATAVIEW)*NB_IMDATAVIEW_MAX);
-    imarray = (IMAGE*) malloc(sizeof(IMAGE)*NB_IMAGES_MAX);
+	imdataview = (IMAGEDATAVIEW*) malloc(sizeof(IMAGEDATAVIEW)*NB_IMDATAVIEW_MAX);
+    for(int viewindex=0; viewindex<NB_IMDATAVIEW_MAX; viewindex++) {
+        imdataview[viewindex].dispmap          = 0;
 
+        imdataview[viewindex].imindex          = -1;
+        imdataview[viewindex].computearrayinit = 0;
+        imdataview[viewindex].allocated_viewpixels = 0;
 
-    for(int i=0; i<NB_IMDATAVIEW_MAX; i++) {
+        imdataview[viewindex].scale_range_perc = 0.0; // min/max
+        imdataview[viewindex].scale_type       = SCALE_LINEAR;
+        imdataview[viewindex].scalefunc        = *scalefunction_linear;
+        imdataview[viewindex].scale_coeff      = 0.0;
 
-        imdataview[i].dispmap = 0;
+        imdataview[viewindex].bscale_center    = 0.5;
+        imdataview[viewindex].bscale_slope     = 1.0;
 
-        imdataview[i].imindex  = -1;
-        imdataview[i].computearrayinit = 0;
-        imdataview[i].allocated_viewpixels = 0;
+        imdataview[viewindex].view_streaminfo  = 0;
+        imdataview[viewindex].view_pixinfo     = 0;
+        imdataview[viewindex].view_imstat      = 0;
+        imdataview[viewindex].view_timing      = 0;
 
-        imdataview[i].scale_range_perc = 0.0; // min/max
-        imdataview[i].scale_type = SCALE_LINEAR;
-        imdataview[i].scalefunc = *scalefunction_linear;
-        imdataview[i].scale_coeff = 0.0;
-
-        imdataview[i].bscale_center = 0.5;
-        imdataview[i].bscale_slope = 1.0;
-
-        imdataview[i].view_streaminfo = 0;
-        imdataview[i].view_pixinfo    = 0;
-        imdataview[i].view_imstat     = 0;
-        imdataview[i].view_timing     = 0;
-
-        imdataview[i].viewpixels = NULL;
-        imdataview[i].PixelRaw_array = NULL;
-        imdataview[i].PixelBuff_array = NULL;
+		imdataview[viewindex].allocated_viewpixels = 0;
+        imdataview[viewindex].viewpixels       = NULL;
+        imdataview[viewindex].PixelIndexRaw_array   = NULL;
+        imdataview[viewindex].PixelIndexViewBuff_array  = NULL;
     }
 
 
-
+	// initialize color maps
+	cmapdata.colormapinit = 0;
     precompute_cmap();
+
     for(int i=0; i<NB_IMDATAVIEW_MAX; i++) {
         // colormap
-        imdataview[i].COLORMAP_RVAL = cmapdata.COLORMAP_GREY_RVAL;
-        imdataview[i].COLORMAP_GVAL = cmapdata.COLORMAP_GREY_GVAL;
-        imdataview[i].COLORMAP_BVAL = cmapdata.COLORMAP_GREY_BVAL;
+        imdataview[i].COLORMAP_RVAL = (unsigned char*) malloc(sizeof(unsigned char)*cmapdata.NBlevel);
+        imdataview[i].COLORMAP_GVAL = (unsigned char*) malloc(sizeof(unsigned char)*cmapdata.NBlevel);
+        imdataview[i].COLORMAP_BVAL = (unsigned char*) malloc(sizeof(unsigned char)*cmapdata.NBlevel);
+        
+        for(int l= 0; l< cmapdata.NBlevel; l++) {
+        imdataview[i].COLORMAP_RVAL[l] = cmapdata.COLORMAP_GREY_RVAL[l];
+        imdataview[i].COLORMAP_GVAL[l] = cmapdata.COLORMAP_GREY_GVAL[l];
+        imdataview[i].COLORMAP_BVAL[l] = cmapdata.COLORMAP_GREY_BVAL[l];
+		}
 	}
 
 
@@ -376,7 +407,13 @@ int main(int argc, char *argv[])
 
 
 
+
+	widgets = g_slice_new(app_widgets);
+
+	// Initialize the widget set
     gtk_init(&argc, &argv);
+
+
 
     widgets->pressed_button1_status = 0;
     widgets->pressed_button3_status = 0;
@@ -400,31 +437,7 @@ int main(int argc, char *argv[])
 
 
     // intensity scale
-    /*	widgets->scale_log1    = GTK_WIDGET(gtk_builder_get_object(builder, "scale_log 1"));
-    	widgets->scale_log2    = GTK_WIDGET(gtk_builder_get_object(builder, "scale_log 2"));
-    	widgets->scale_log3    = GTK_WIDGET(gtk_builder_get_object(builder, "scale_log 3"));
-    	widgets->scale_log4    = GTK_WIDGET(gtk_builder_get_object(builder, "scale_log 4"));
-    	widgets->scale_power01 = GTK_WIDGET(gtk_builder_get_object(builder, "scale_power01"));
-    	widgets->scale_power02 = GTK_WIDGET(gtk_builder_get_object(builder, "scale_power02"));
-    	widgets->scale_power05 = GTK_WIDGET(gtk_builder_get_object(builder, "scale_power05"));
-    	widgets->scale_linear  = GTK_WIDGET(gtk_builder_get_object(builder, "scale_linear"));
-    	widgets->scale_power20 = GTK_WIDGET(gtk_builder_get_object(builder, "scale_power20"));
-    	widgets->scale_power40 = GTK_WIDGET(gtk_builder_get_object(builder, "scale_power40"));
-    	widgets->scale_power80 = GTK_WIDGET(gtk_builder_get_object(builder, "scale_power80"));
 
-    	widgets->scale_rangeminmax = GTK_WIDGET(gtk_builder_get_object(builder, "scale_rangeminmax"));
-    	widgets->scale_range005    = GTK_WIDGET(gtk_builder_get_object(builder, "scale_range005"));
-    	widgets->scale_range01     = GTK_WIDGET(gtk_builder_get_object(builder, "scale_range01"));
-    	widgets->scale_range02     = GTK_WIDGET(gtk_builder_get_object(builder, "scale_range02"));
-    	widgets->scale_range03     = GTK_WIDGET(gtk_builder_get_object(builder, "scale_range03"));
-    	widgets->scale_range05     = GTK_WIDGET(gtk_builder_get_object(builder, "scale_range05"));
-    	widgets->scale_range10     = GTK_WIDGET(gtk_builder_get_object(builder, "scale_range10"));
-    	widgets->scale_range20     = GTK_WIDGET(gtk_builder_get_object(builder, "scale_range20"));
-
-    	widgets->colormap_grey     = GTK_WIDGET(gtk_builder_get_object(builder, "colormap_grey"));
-    	widgets->colormap_heat     = GTK_WIDGET(gtk_builder_get_object(builder, "colormap_heat"));
-    	widgets->colormap_cool     = GTK_WIDGET(gtk_builder_get_object(builder, "colormap_cool"));
-    */
 
     gtk_widget_add_events( widgets->mainwindow, GDK_KEY_PRESS_MASK);
 
@@ -438,6 +451,7 @@ int main(int argc, char *argv[])
     g_signal_connect (G_OBJECT (widgets->mainwindow), "key_press_event", G_CALLBACK (on_window_main_key_press_event), NULL);
 
     g_object_unref(builder);
+
 
 
 
@@ -464,11 +478,50 @@ int main(int argc, char *argv[])
         fflush(stdout);
     }
 
+
+
+
+	//gtk_widget_destroy(
     g_slice_free(app_widgets, widgets);
+
+
+	
+	for(int imindex = 0; imindex < NB_IMAGES_MAX; imindex++)
+	{
+		//printf("imarray %d used = %d\n", imindex, imarray[imindex].used);
+		if(imarray[imindex].used == 1) {
+			//printf("Free image %d\n", imindex);
+			ImageStreamIO_closeIm(&imarray[imindex]);
+		}
+	}
+
+
+	
+
+	
+	for(int viewindex=0; viewindex<NB_IMDATAVIEW_MAX; viewindex++) {
+		
+		if(imdataview[viewindex].computearrayinit == 1) {
+			free(imdataview[viewindex].computearray);
+			free(imdataview[viewindex].computearray16);
+			free(imdataview[viewindex].PixelIndexRaw_array);
+			free(imdataview[viewindex].PixelIndexViewBuff_array);
+			imdataview[viewindex].computearrayinit = 0;
+		}
+		if(imdataview[viewindex].allocated_viewpixels == 1) {
+			free(imdataview[viewindex].viewpixels);
+			imdataview[viewindex].allocated_viewpixels = 0;
+		}
+
+		free(imdataview[viewindex].COLORMAP_RVAL);
+		free(imdataview[viewindex].COLORMAP_GVAL);
+		free(imdataview[viewindex].COLORMAP_BVAL);
+	}
 
     free(imdataview);
     free(imarray);
-
+	free_cmap();
+    
     return 0;
 }
 
@@ -516,7 +569,7 @@ int open_shm_image(
     char dispmap_stream_filename[100];
 
 
-
+	
     ImageStreamIO_filename(stream_filename, 64, streamname);
 
     char dispmap_streamname[100];
@@ -526,15 +579,13 @@ int open_shm_image(
     if(verbose) {
         printf("Filename = %s\n", stream_filename);
         printf("dispname (optional) = %s\n", dispmap_stream_filename);
+        fflush(stdout);
     }
 
 
-    long imindexdisp;
     long imindex = 0;
 
-    // if(imdataview[viewindex].imindex != -1) {
     close_shm_image(viewindex);
-    //}
 
 
 
@@ -547,15 +598,13 @@ int open_shm_image(
     else
     {
         if(verbose) {
-            printf("--------------------------- LOADED %s %d %d\n",
+            printf("--------------------------- LOADED %s %d %d into image %ld\n",
                    imarray[imindex].md[0].name,
                    imarray[imindex].md[0].size[0],
-                   imarray[imindex].md[0].size[1]);
+                   imarray[imindex].md[0].size[1],
+                   imindex);
         }
         sprintf(imdataview[viewindex].imname, "%s", streamname);
-
-
-
 
 
 
@@ -564,16 +613,12 @@ int open_shm_image(
 
         int dispmap_index = imindex + 1;
 
-        char fnametest[500];
-
         if( access( dispmap_stream_filename, F_OK ) != -1 ) {
             if(ImageStreamIO_openIm(&imarray[dispmap_index], dispmap_streamname) == IMAGESTREAMIO_SUCCESS)
             {
                 imdataview[viewindex].dispmap = 1;
                 imdataview[viewindex].dispmap_imindex = dispmap_index;
                 printf("FOUND DISPLAY MAP\n");
-
-                imindexdisp = imdataview[viewindex].dispmap_imindex;
             }
         }
 
@@ -582,9 +627,6 @@ int open_shm_image(
 
         imdataview[viewindex].imindex = 0;
         imindex     = imdataview[viewindex].imindex;
-        if(imdataview[viewindex].dispmap == 0) {
-            imindexdisp = imdataview[viewindex].imindex; // default
-        }
 
 
 
@@ -594,19 +636,16 @@ int open_shm_image(
         imdataview[viewindex].xsize = imarray[imindex].md[0].size[0];
         imdataview[viewindex].ysize = imarray[imindex].md[0].size[1];
 
-        imdataview[viewindex].naxisdisp = imarray[imindexdisp].md[0].naxis;
-        imdataview[viewindex].xsizedisp = imarray[imindexdisp].md[0].size[0];
-        imdataview[viewindex].ysizedisp = imarray[imindexdisp].md[0].size[1];
 
 
         if(verbose) {
-            printf("map size = %d %d\n", imdataview[viewindex].xsizedisp, imdataview[viewindex].ysizedisp);
+            printf("map size = %d %d\n", imdataview[viewindex].xsize, imdataview[viewindex].ysize);
             fflush(stdout);
         }
 
 
         // start with zoom 1
-        resize_PixelBufferView(imdataview[viewindex].xsizedisp, imdataview[viewindex].ysizedisp);
+		resize_PixelBufferView(imdataview[viewindex].xsize, imdataview[viewindex].ysize);
 
 
         // set pix active area in raw stream
@@ -615,25 +654,20 @@ int open_shm_image(
         imdataview[viewindex].jjmin = 0;
         imdataview[viewindex].jjmax = imarray[imindex].md[0].size[1];
 
-        imdataview[viewindex].iimindisp = 0;
-        imdataview[viewindex].iimaxdisp = imarray[imindexdisp].md[0].size[0];
-        imdataview[viewindex].jjmindisp = 0;
-        imdataview[viewindex].jjmaxdisp = imarray[imindexdisp].md[0].size[1];
-
 
 
         // we initially set zoom factor = 1
 
-        //		imdataview[viewindex].viewXsize = imarray[index].md[0].size[0];
-        //		imdataview[viewindex].viewYsize = imarray[index].md[0].size[1];
-        //		printf("VIEW SIZE %d %d\n", imdataview[viewindex].viewXsize, imdataview[viewindex].viewYsize);
+        //		imdataview[viewindex].xviewsize = imarray[index].md[0].size[0];
+        //		imdataview[viewindex].vviewsize = imarray[index].md[0].size[1];
+        //		printf("VIEW SIZE %d %d\n", imdataview[viewindex].xviewsize, imdataview[viewindex].yviewsize);
         //		gtk_widget_set_size_request();
 
         // set view active area
         imdataview[viewindex].xviewmin = 0;
-        imdataview[viewindex].xviewmax = imdataview[viewindex].viewXsize;
+        imdataview[viewindex].xviewmax = imdataview[viewindex].xviewsize;
         imdataview[viewindex].yviewmin = 0;
-        imdataview[viewindex].yviewmax = imdataview[viewindex].viewYsize;
+        imdataview[viewindex].yviewmax = imdataview[viewindex].yviewsize;
 
 
         imdataview[viewindex].vmin = 0.0;
@@ -649,7 +683,7 @@ int open_shm_image(
         imdataview[viewindex].update_minmax = 1;
 
         imdataview[viewindex].button1pressed = 0;
-        imdataview[viewindex].button3pressed = 0;
+        imdataview[viewindex].button3pressed = 0;		
     }
 
     return 0;
@@ -700,14 +734,14 @@ int close_shm_image(int viewindex)
 
 
 
-        if(imdataview[viewindex].PixelRaw_array != NULL) {
-            free(imdataview[viewindex].PixelRaw_array);
-            imdataview[viewindex].PixelRaw_array = NULL;
+        if(imdataview[viewindex].PixelIndexRaw_array != NULL) {
+            free(imdataview[viewindex].PixelIndexRaw_array);
+            imdataview[viewindex].PixelIndexRaw_array = NULL;
         }
 
-        if(imdataview[viewindex].PixelBuff_array != NULL) {
-            free(imdataview[viewindex].PixelBuff_array);
-            imdataview[viewindex].PixelBuff_array = NULL;
+        if(imdataview[viewindex].PixelIndexViewBuff_array != NULL) {
+            free(imdataview[viewindex].PixelIndexViewBuff_array);
+            imdataview[viewindex].PixelIndexViewBuff_array = NULL;
         }
 
 
@@ -851,7 +885,6 @@ gboolean on_menuitem_open_activate(
 
     return TRUE;
 }
-
 
 
 

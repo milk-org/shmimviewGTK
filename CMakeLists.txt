@@ -1,3 +1,37 @@
+# Example, run from _build directory :
+#
+#
+# 
+# cmake ..
+# cmake .. -DCMAKE_INSTALL_PREFIX=../_install
+#
+#
+#
+# BUILD TYPE
+# ===============================
+# Debug build type turns off optimization
+# cmake -DCMAKE_BUILD_TYPE=Debug ..
+#
+# Release build type turns on optimization flags
+# cmake -DCMAKE_BUILD_TYPE=Release ..
+#
+#
+#
+#
+# COMPILING
+# ================================
+# make clean
+# make
+# sudo make install
+#
+#
+# TESTING FOR MEMORY LEAKS
+# ===============================
+# Compile Debug build type
+#
+# valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --num-callers=200 --show-reachable=yes --log-file=shmimview.memcheck.log --max-stackframe=4442392 --gen-suppressions=all --suppressions=shmimview.memcheck.supp shmimview 
+#
+
 cmake_minimum_required (VERSION 3.15)
 
 PROJECT("shmimviewGTK" C)
@@ -10,7 +44,7 @@ PROJECT("shmimviewGTK" C)
 
 # Version number
 set ( VERSION_MAJOR 0 )
-set ( VERSION_MINOR 1 )
+set ( VERSION_MINOR 2 )
 set ( VERSION_PATCH 01 )
 
 message("====================================================")
@@ -32,7 +66,8 @@ configure_file (
 
 # Use the package PkgConfig to detect GTK+ headers/library files
 FIND_PACKAGE(PkgConfig REQUIRED)
-PKG_CHECK_MODULES(GTK3 REQUIRED gtk+-3.0)
+PKG_CHECK_MODULES(GTK REQUIRED gtk+-3.0)
+
 
 
 
@@ -41,7 +76,15 @@ PKG_CHECK_MODULES(GTK3 REQUIRED gtk+-3.0)
 # =======================================
 
 # Set Release build flags
+set(CMAKE_C_FLAGS_DEBUG     "-O0 -g -Wall -Wextra -rdynamic")
+
+# Set Release build flags
 set(CMAKE_C_FLAGS_RELEASE     "-Ofast -DNDEBUG -rdynamic")
+
+
+
+# Set Release build flags
+#set(CMAKE_C_FLAGS_RELEASE     "-Ofast -DNDEBUG -rdynamic")
 #SET(CMAKE_C_FLAGS "-g -O2 -Wall -Wextra -rdynamic")
 
 # Set a default build type if none was specified
@@ -71,17 +114,8 @@ add_compile_options(-pipe)
 
 
 
-
-
-
-
 ADD_EXECUTABLE(shmimview
 src/shmimview.c src/shmimview-view.c src/shmimview-scale.c src/shmimview-zoom.c src/shmimview-process.c shmimview-ui.c)
-
-
-
-
-
 
 
 
@@ -94,5 +128,8 @@ set(LIBS ${LIBS} ImageStreamIO)
 
 
 target_link_libraries(shmimview ${LIBS} m)
+
+
+message("LIBS : ${LIBS}")
 
 install(TARGETS shmimview DESTINATION bin)

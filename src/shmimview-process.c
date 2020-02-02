@@ -176,30 +176,39 @@ void PixVal_to_RGB(float pixval, guchar *rval, guchar *gval, guchar *bval)
 
 
 
-void free_viewpixels(guchar *pixels, __attribute__((unused)) gpointer data) {
-	int viewindex = 0;
-	imdataview[viewindex].allocated_viewpixels = 0;
+void free_viewpixels(
+    guchar *pixels,
+    __attribute__((unused)) gpointer data
+) {
+    int viewindex = 0;
+    imdataview[viewindex].allocated_viewpixels = 0;
     free(pixels);
 }
 
 
-int resize_PixelBufferView(int xsize, int ysize)
+
+
+
+int resize_PixelBufferView(
+    int xsize,
+    int ysize
+)
 {
     int viewindex = 0;
 
     static int finit = 0;
 
-    imdataview[viewindex].viewXsize = xsize;
-    imdataview[viewindex].viewYsize = ysize;
+    imdataview[viewindex].xviewsize = xsize;
+    imdataview[viewindex].yviewsize = ysize;
 
     // (re-)allocate pixel buffer
 
-    imdataview[viewindex].stride = imdataview[viewindex].viewXsize * BYTES_PER_PIXEL;
+    imdataview[viewindex].stride = imdataview[viewindex].xviewsize * BYTES_PER_PIXEL;
     imdataview[viewindex].stride += (4 - imdataview[viewindex].stride % 4) % 4; // ensure multiple of 4
 
     if(verbose) {
         printf("stride = %d\n", imdataview[viewindex].stride);
-        printf("ALLOCATING viewpixels %d %d\n", imdataview[viewindex].viewXsize, imdataview[viewindex].viewYsize);
+        printf("ALLOCATING viewpixels %d %d\n", imdataview[viewindex].xviewsize, imdataview[viewindex].yviewsize);
         fflush(stdout);
     }
 
@@ -224,7 +233,7 @@ int resize_PixelBufferView(int xsize, int ysize)
         fflush(stdout);
     }
 
-    imdataview[viewindex].viewpixels = calloc(imdataview[viewindex].viewYsize * imdataview[viewindex].stride, 1);
+    imdataview[viewindex].viewpixels = calloc(imdataview[viewindex].yviewsize * imdataview[viewindex].stride, 1);
     imdataview[viewindex].allocated_viewpixels = 1;
 
 
@@ -240,7 +249,7 @@ int resize_PixelBufferView(int xsize, int ysize)
                                        GDK_COLORSPACE_RGB,     // colorspace
                                        0,                      // has_alpha
                                        8,                      // bits-per-sample
-                                       imdataview[viewindex].viewXsize, imdataview[viewindex].viewYsize,       // cols, rows
+                                       imdataview[viewindex].xviewsize, imdataview[viewindex].yviewsize,       // cols, rows
                                        imdataview[viewindex].stride,              // rowstride
                                        free_viewpixels,            // destroy_fn
                                        NULL                    // destroy_fn_data
@@ -248,7 +257,7 @@ int resize_PixelBufferView(int xsize, int ysize)
 
 
     imdataview[viewindex].gtkimage = GTK_IMAGE(gtk_image_new_from_pixbuf(imdataview[viewindex].pbview));
-    
+
     imdataview[viewindex].update = 1;
 
     if(verbose) {
@@ -274,8 +283,8 @@ int update_pic() {
 
     int ii, jj;
 
-    static int viewXsize_save = -1;
-    static int viewYsize_save = -1;
+    static int xviewsize_save = -1;
+    static int yviewsize_save = -1;
 
     static int iimin_save = -1;
     static int iimax_save = -1;
@@ -290,9 +299,9 @@ int update_pic() {
 
     int viewindex = 0;
     int imindex;
-    int imindexdisp;
+    //int imindexdisp;
 
-    int viewXsize, viewYsize; // local copies
+    int xviewsize, yviewsize; // local copies
 
     static unsigned long viewcnt = 0;
 
@@ -300,13 +309,14 @@ int update_pic() {
 
 
 
+
     if(imdataview[viewindex].dispmap == 1) {
-        imindexdisp = imdataview[viewindex].dispmap_imindex;
+        //imindexdisp = imdataview[viewindex].dispmap_imindex;
         imindex     = imdataview[viewindex].imindex;
     }
     else
     {
-        imindexdisp = imdataview[viewindex].imindex;
+        //imindexdisp = imdataview[viewindex].imindex;
         imindex     = imdataview[viewindex].imindex;
     }
 
@@ -339,42 +349,21 @@ int update_pic() {
                 printf("----- widget size is currently %d x %d  start at %7.2f x %7.2f\n", alloc.width, alloc.height, hval, vval);
             }
 
-			imdataview[viewindex].xviewmin = hval;
-			imdataview[viewindex].xviewmax = hval + alloc.width;
-			
-			imdataview[viewindex].yviewmin = vval;
-			imdataview[viewindex].yviewmax = vval + alloc.height;
+            imdataview[viewindex].xviewmin = hval;
+            imdataview[viewindex].xviewmax = hval + alloc.width;
 
-			
-			imdataview[viewindex].iimin = (int) ( imdataview[viewindex].xviewmin / imdataview[viewindex].zoomFact );
-			imdataview[viewindex].iimax = (int) ( imdataview[viewindex].xviewmax / imdataview[viewindex].zoomFact );
-			imdataview[viewindex].jjmin = (int) ( imdataview[viewindex].yviewmin / imdataview[viewindex].zoomFact );
-			imdataview[viewindex].jjmax = (int) ( imdataview[viewindex].yviewmax / imdataview[viewindex].zoomFact );
- 
+            imdataview[viewindex].yviewmin = vval;
+            imdataview[viewindex].yviewmax = vval + alloc.height;
+
+
+            imdataview[viewindex].iimin = (int) ( imdataview[viewindex].xviewmin / imdataview[viewindex].zoomFact );
+            imdataview[viewindex].iimax = (int) ( imdataview[viewindex].xviewmax / imdataview[viewindex].zoomFact );
+            imdataview[viewindex].jjmin = (int) ( imdataview[viewindex].yviewmin / imdataview[viewindex].zoomFact );
+            imdataview[viewindex].jjmax = (int) ( imdataview[viewindex].yviewmax / imdataview[viewindex].zoomFact );
+
 
             //	GdkPixbuf *pb = gtk_image_get_pixbuf(imdataview[viewindex].gtkimage);
 
-            if(verbose) {
-                printf("============================================\n");
-                printf(" ----- %10lu ----------------\n", viewcnt);
-                printf("\n");
-                printf("MAX VIEW  viewXsize         = %d\n", imdataview[viewindex].viewXsize);
-                printf("MAX VIEW  viewYsize         = %d\n", imdataview[viewindex].viewYsize);
-                printf("\n");
-                printf("xsizedisp                   = %d\n", imdataview[viewindex].xsizedisp);
-                printf("ysizedisp                   = %d\n", imdataview[viewindex].ysizedisp);
-                printf("\n");
-                printf("ACTIVE VIEW AREA X xview    = %4d - %4d (size = %4d)\n", imdataview[viewindex].xviewmin, imdataview[viewindex].xviewmax, alloc.width);
-                printf("ACTIVE VIEW AREA Y yview    = %4d - %4d (size = %4d)\n", imdataview[viewindex].yviewmin, imdataview[viewindex].yviewmax, alloc.height);
-                printf("\n");
-                printf("VIEW  zoomFact              = %f\n", imdataview[viewindex].zoomFact);
-                printf("ACTIVE PIX AREA ii          = %4ld - %4ld\n", imdataview[viewindex].iimin, imdataview[viewindex].iimax);
-                printf("ACTIVE PIX AREA jj          = %4ld - %4ld\n", imdataview[viewindex].jjmin, imdataview[viewindex].jjmax);
-                printf("============================================\n");
-                fflush(stdout);
-            }
-
-            viewcnt++;
 
 
             char string_streaminfo[300];
@@ -425,6 +414,17 @@ int update_pic() {
             }
 
 
+
+
+
+
+
+
+
+
+
+
+            // optional information display
             if(imdataview[viewindex].view_streaminfo == 1) {
                 sprintf(string_streaminfo, "[%d] %s %s %d x %d\nmin/max: %.2g - %.2g\nzoom: %.2f\nscale: %.3f %3f",
                         viewindex,
@@ -475,91 +475,108 @@ int update_pic() {
 
 
             imcnt0 = imarray[imindex].md[0].cnt0;
-            int imXsizedisp = 0;
-            int imYsizedisp = 0;
-            int imiddisp = 0;
 
-            if( imarray[imindexdisp].md[0].naxis == 2) {				
-                imXsizedisp = imarray[imindexdisp].md[0].size[0];
-                imYsizedisp = imarray[imindexdisp].md[0].size[1];
-                imiddisp = 0;
-            } else if( imarray[imindexdisp].md[0].naxis == 3) {
-                imXsizedisp = imarray[imindexdisp].md[0].size[1];
-                imYsizedisp = imarray[imindexdisp].md[0].size[2];
-                imiddisp = imcnt0 % imarray[imindexdisp].md[0].size[0];
-            }
-            int imSizedisp = imXsizedisp * imYsizedisp;
-            
-
-            int imXsize = 0;
-            int imYsize = 0;
-            int imid = 0;
-
-            if( imarray[imindex].md[0].naxis == 2) {				
-                imXsize = imarray[imindex].md[0].size[0];
-                imYsize = imarray[imindex].md[0].size[1];
-                imid = 0;
-            } else if( imarray[imindex].md[0].naxis == 3) {
-                imXsize = imarray[imindex].md[0].size[1];
-                imYsize = imarray[imindex].md[0].size[2];
-                imid = imcnt0 % imarray[imindex].md[0].size[0];
-            }
-            int imSize = imXsize * imYsize;
 
 
             guchar *pbviewarray = gdk_pixbuf_get_pixels(imdataview[viewindex].pbview);
 
             //imdataview[0].zoomFact = 1.0 * imdataview[0].xsize / (imdataview[0].x1view - imdataview[0].x0view);
 
-            // compute min and max window coord in raw image
 
 
-            viewXsize = imdataview[viewindex].viewXsize;
-            viewYsize = imdataview[viewindex].viewYsize;
+			// For convenience, copy to local variables
+			
+            xviewsize = imdataview[viewindex].xviewsize;
+            yviewsize = imdataview[viewindex].yviewsize;
+
+			int xsize = imdataview[viewindex].xsize;
+			int ysize = imdataview[viewindex].ysize;
+			long xysize = xsize*ysize;
+
+			int imid = 0;
+
+            if(verbose) {
+                printf("============================================\n");
+                printf(" ----- %10lu ----------------\n",    viewcnt);
+                printf("dispmap                     : %d\n", imdataview[viewindex].dispmap);
+                printf("\n");
+                printf("STREAM:\n");
+                printf("Image stream size           = %4d %4d\n", xsize, ysize);
+                printf("\n");
+                printf("VIEW:\n");
+                printf("xviewsize                   = %d\n", xviewsize);
+                printf("yviewsize                   = %d\n", yviewsize);
+                printf("\n");
+                //printf("xsizedisp                   = %d\n", imdataview[viewindex].xsizedisp);
+                //printf("ysizedisp                   = %d\n", imdataview[viewindex].ysizedisp);
+                printf("\n");
+                printf("ACTIVE VIEW AREA X xview    = %4d - %4d (size = %4d)\n", imdataview[viewindex].xviewmin, imdataview[viewindex].xviewmax, alloc.width);
+                printf("ACTIVE VIEW AREA Y yview    = %4d - %4d (size = %4d)\n", imdataview[viewindex].yviewmin, imdataview[viewindex].yviewmax, alloc.height);
+                printf("\n");
+                printf("VIEW  zoomFact              = %f\n", imdataview[viewindex].zoomFact);
+                printf("ACTIVE PIX AREA ii          = %4ld - %4ld\n", imdataview[viewindex].iimin, imdataview[viewindex].iimax);
+                printf("ACTIVE PIX AREA jj          = %4ld - %4ld\n", imdataview[viewindex].jjmin, imdataview[viewindex].jjmax);
+                printf("============================================\n");
+                fflush(stdout);
+            }
+
+            viewcnt++;
+
+
+
+
+
+
+
+
+
+
+
+
 
             if(imdataview[viewindex].computearrayinit == 0)
             {
-				if(verbose) {
-					printf("INIT ALLOCATE\n");
-				}
+                if(verbose) {
+                    printf("INIT ALLOCATE\n");
+                }
 
-                imdataview[viewindex].computearray = (float*) malloc(sizeof(float) * imSize);
-                imdataview[viewindex].computearray16 = (uint16_t*) malloc(sizeof(uint16_t) * imSize);
-                
+                imdataview[viewindex].computearray   = (float*) malloc(sizeof(float) * xysize);
+                imdataview[viewindex].computearray16 = (uint16_t*) malloc(sizeof(uint16_t) * xysize);
+
                 if(Rarray != NULL) {
-					free(Rarray);
-					Rarray = NULL;
-				}
-                Rarray = (guchar*) malloc(sizeof(guchar) * imSize);
-                
-				if(Garray != NULL) {
-					free(Garray);
-					Garray = NULL;
-				}
-                Garray = (guchar*) malloc(sizeof(guchar) * imSize);
-                
-				if(Barray != NULL) {
-					free(Barray);
-					Barray = NULL;
-				}
-                Barray = (guchar*) malloc(sizeof(guchar) * imSize);
+                    free(Rarray);
+                    Rarray = NULL;
+                }
+                Rarray = (guchar*) malloc(sizeof(guchar) * xysize);
+
+                if(Garray != NULL) {
+                    free(Garray);
+                    Garray = NULL;
+                }
+                Garray = (guchar*) malloc(sizeof(guchar) * xysize);
+
+                if(Barray != NULL) {
+                    free(Barray);
+                    Barray = NULL;
+                }
+                Barray = (guchar*) malloc(sizeof(guchar) * xysize);
 
                 alloc_cnt += 1;
-                
-                if(imdataview[viewindex].PixelRaw_array != NULL) {
-					free(imdataview[viewindex].PixelRaw_array);
-					imdataview[viewindex].PixelRaw_array = NULL;
-				}
-                imdataview[viewindex].PixelRaw_array = (long*) malloc(sizeof(long) * viewXsize * viewYsize);
-                
-                if(imdataview[viewindex].PixelBuff_array != NULL) {
-					free(imdataview[viewindex].PixelBuff_array);
-					imdataview[viewindex].PixelBuff_array = NULL;
-				}
-                imdataview[viewindex].PixelBuff_array = (int*) malloc(sizeof(int) * viewXsize * viewYsize);
-                
+
+                if(imdataview[viewindex].PixelIndexRaw_array != NULL) {
+                    free(imdataview[viewindex].PixelIndexRaw_array);
+                    imdataview[viewindex].PixelIndexRaw_array = NULL;
+                }
+                imdataview[viewindex].PixelIndexRaw_array = (long*) malloc(sizeof(long) * xviewsize * yviewsize);
+
+                if(imdataview[viewindex].PixelIndexViewBuff_array != NULL) {
+                    free(imdataview[viewindex].PixelIndexViewBuff_array);
+                    imdataview[viewindex].PixelIndexViewBuff_array = NULL;
+                }
+                imdataview[viewindex].PixelIndexViewBuff_array = (int*) malloc(sizeof(int) * xviewsize * yviewsize);
+
                 imdataview[viewindex].computearrayinit = 1;
-            } 
+            }
             else
             {
                 if(verbose) {
@@ -567,24 +584,24 @@ int update_pic() {
                     fflush(stdout);
                 }
                 // has view size changed ?
-                if( (viewXsize != viewXsize_save)
-                        || (viewYsize != viewYsize_save))
+                if( (xviewsize != xviewsize_save)
+                        || (yviewsize != yviewsize_save))
                 {
 
-                    if(imdataview[viewindex].PixelRaw_array != NULL) {
-						free(imdataview[viewindex].PixelRaw_array);
-					}
-                    imdataview[viewindex].PixelRaw_array = (long*) malloc(sizeof(long) * viewXsize * viewYsize);
+                    if(imdataview[viewindex].PixelIndexRaw_array != NULL) {
+                        free(imdataview[viewindex].PixelIndexRaw_array);
+                    }
+                    imdataview[viewindex].PixelIndexRaw_array = (long*) malloc(sizeof(long) * xviewsize * yviewsize);
 
                     if(verbose) {
                         printf("------------ [%5d %s]\n", __LINE__, __FILE__);
                         fflush(stdout);
                     }
 
-					if(imdataview[viewindex].PixelBuff_array != NULL) {
-						free(imdataview[viewindex].PixelBuff_array);
-					}
-                    imdataview[viewindex].PixelBuff_array = (int*) malloc(sizeof(int) * viewXsize * viewYsize);
+                    if(imdataview[viewindex].PixelIndexViewBuff_array != NULL) {
+                        free(imdataview[viewindex].PixelIndexViewBuff_array);
+                    }
+                    imdataview[viewindex].PixelIndexViewBuff_array = (int*) malloc(sizeof(int) * xviewsize * yviewsize);
 
                     alloc_cnt -= 1;
                     if(verbose) {
@@ -599,11 +616,11 @@ int update_pic() {
             }
 
 
-			//
+            //
             // If view window changed, recompute mapping from original image to view
             //
-            if( (viewXsize != viewXsize_save)
-                    || (viewYsize != viewYsize_save)
+            if( (xviewsize != xviewsize_save)
+                    || (xviewsize != xviewsize_save)
                     || (imdataview[viewindex].iimin != iimin_save)
                     || (imdataview[viewindex].iimax != iimax_save)
                     || (imdataview[viewindex].jjmin != jjmin_save)
@@ -628,74 +645,77 @@ int update_pic() {
                     fflush(stdout);
                 }
 
-                int iirange = imdataview[viewindex].iimax - imdataview[viewindex].iimin;
-                int jjrange = imdataview[viewindex].jjmax - imdataview[viewindex].jjmin;
+                //int iirange = imdataview[viewindex].iimax - imdataview[viewindex].iimin;
+                //int jjrange = imdataview[viewindex].jjmax - imdataview[viewindex].jjmin;
 
-                int iirangedisp = imdataview[viewindex].iimaxdisp - imdataview[viewindex].iimindisp;
-                int jjrangedisp = imdataview[viewindex].jjmaxdisp - imdataview[viewindex].jjmindisp;
 
                 if(verbose) {
                     printf("------------ [%5d %s]\n", __LINE__, __FILE__);
                     fflush(stdout);
                 }
 
-                for(int yview = 0; yview < viewYsize; yview++)
-                    for (int xview = 0; xview < viewXsize; xview++)
+
+                // initialize mapping from view to view buffer
+                for(int yview = 0; yview < yviewsize; yview++)
+                    for (int xview = 0; xview < xviewsize; xview++)
                     {
-                        int pixindexView = yview * viewXsize + xview;
+                        int pixindexView = yview * xviewsize + xview;
 
                         int pixindexBuff = yview * imdataview[viewindex].stride + xview * BYTES_PER_PIXEL;
 
-                        imdataview[viewindex].PixelRaw_array[pixindexView] = -1;
-                        imdataview[viewindex].PixelBuff_array[pixindexView] = pixindexBuff;
+                        imdataview[viewindex].PixelIndexRaw_array[pixindexView]      = -1;
+                        imdataview[viewindex].PixelIndexViewBuff_array[pixindexView] = pixindexBuff;
                     }
 
                 if(verbose) {
                     printf("------------ [%5d %s]\n", __LINE__, __FILE__);
+                    printf("             xview %d - %d\n", imdataview[viewindex].xviewmin, imdataview[viewindex].xviewmax);
+                    printf("             yview %d - %d\n", imdataview[viewindex].yviewmin, imdataview[viewindex].yviewmax);
                     fflush(stdout);
                 }
 
 
-                for (int yview = imdataview[viewindex].yviewmin; yview < imdataview[viewindex].yviewmax; yview++)
-                    for (int xview = imdataview[viewindex].xviewmin; xview < imdataview[viewindex].xviewmax; xview++)
-                    {
-                        long pixindexRaw;
-                        long pixindexView;
+                for (int yview = imdataview[viewindex].yviewmin; yview < imdataview[viewindex].yviewmax; yview++) {
+                    if((yview >= 0) && (yview < yviewsize)) {
+                        for (int xview = imdataview[viewindex].xviewmin; xview < imdataview[viewindex].xviewmax; xview++) {
+                            if((xview >= 0)&&(xview < xviewsize)) {
+                                long pixindexRaw;
+                                long pixindexView;
 
-                        pixindexView = yview * viewXsize + xview;
-
-						ii = (int) ( xview / imdataview[viewindex].zoomFact );
-						jj = (int) ( yview / imdataview[viewindex].zoomFact );
-
-                        pixindexRaw = jj*imXsizedisp + ii;
-                        
-                        if(imdataview[viewindex].dispmap == 1) {
-							pixindexRaw = imarray[imdataview[viewindex].dispmap_imindex].array.SI32[jj*imXsizedisp+ii];
-						} 
+                                pixindexView = yview * xviewsize + xview;
 
 
-                        if(ii<0) {
-                            ii = 0;
-                            pixindexRaw = -1;
+
+                                ii = (int) ( xview / imdataview[viewindex].zoomFact );
+                                jj = (int) ( yview / imdataview[viewindex].zoomFact );
+                                pixindexRaw = jj*imdataview[viewindex].xsize + ii;
+
+                                if(ii<0) {
+                                    ii = 0;
+                                    pixindexRaw = -1;
+                                }
+                                else if(jj<0) {
+                                    jj = 0;
+                                    pixindexRaw = -1;
+                                }
+                                else if(ii > imdataview[viewindex].xsize-1) {
+                                    ii = imdataview[viewindex].xsize-1;
+                                    pixindexRaw = -1;
+                                }
+                                else if(jj > imdataview[viewindex].ysize-1) {
+                                    jj = imdataview[viewindex].ysize-1;
+                                    pixindexRaw = -1;
+                                }
+
+
+                                if(imdataview[viewindex].dispmap == 1) {
+                                    pixindexRaw = imarray[imdataview[viewindex].dispmap_imindex].array.SI32[jj*imdataview[viewindex].xsize+ii];
+                                }
+                                imdataview[viewindex].PixelIndexRaw_array[pixindexView] = pixindexRaw;
+                            }
                         }
-
-                        if(jj<0) {
-                            jj = 0;
-                            pixindexRaw = -1;
-                        }
-
-                        if(ii > imdataview[viewindex].xsizedisp-1) {
-                            ii = imdataview[viewindex].xsizedisp-1;
-                            pixindexRaw = -2;
-                        }
-
-                        if(jj > imdataview[viewindex].ysizedisp-1) {
-                            jj = imdataview[viewindex].ysizedisp-1;
-                            pixindexRaw = -2;
-                        }
-
-                        imdataview[viewindex].PixelRaw_array[pixindexView] = pixindexRaw;
                     }
+                }
 
                 if(verbose) {
                     printf("------------ DONE RECOMPUTING ARRAY TRANSF\n");
@@ -704,8 +724,13 @@ int update_pic() {
             }
 
 
-            viewXsize_save = viewXsize;
-            viewYsize_save = viewYsize;
+            if(verbose) {
+                printf("------------ [%5d %s]\n", __LINE__, __FILE__);
+                fflush(stdout);
+            }
+
+            xviewsize_save = xviewsize;
+            yviewsize_save = yviewsize;
             iimin_save = imdataview[viewindex].iimin;
             iimax_save = imdataview[viewindex].iimax;
             jjmin_save = imdataview[viewindex].jjmin;
@@ -725,76 +750,113 @@ int update_pic() {
             // Fill in imdataview[viewindex].computearray
             // this is the image area over which things will be computed
 
+            if(verbose) {
+                printf("------------ [%5d %s]\n", __LINE__, __FILE__);
+                printf("             ii   %5ld - %5ld\n", imdataview[viewindex].iimin, imdataview[viewindex].iimax);
+                printf("             jj   %5ld - %5ld\n", imdataview[viewindex].jjmin, imdataview[viewindex].jjmax);
+                fflush(stdout);
+            }
+
+			
+			
+			// compute valid ii and jj range
+			
+			int iimin = 0;
+			if(imdataview[viewindex].iimin > iimin) {
+				iimin = imdataview[viewindex].iimin;
+			}
+			int iimax = imdataview[viewindex].xsize;
+			if(imdataview[viewindex].iimax < iimax) {
+				iimax = imdataview[viewindex].iimax;
+			}
+			int jjmin = 0;
+			if(imdataview[viewindex].jjmin > jjmin) {
+				jjmin = imdataview[viewindex].jjmin;
+			}
+			int jjmax = imdataview[viewindex].ysize;
+			if(imdataview[viewindex].jjmax < jjmax) {
+				jjmax = imdataview[viewindex].jjmax;
+			}
 
 
+
+            if(verbose) {
+                printf("------------ [%5d %s]\n", __LINE__, __FILE__);
+                printf("             ii   %5d - %5d\n", iimin, iimax);
+                printf("             jj   %5d - %5d\n", jjmin, jjmax);
+                fflush(stdout);
+            }
+
+
+            
             switch ( imarray[imindex].md[0].datatype )
             {
             case _DATATYPE_FLOAT:
-                for(ii=imdataview[viewindex].iimin; ii<imdataview[viewindex].iimax; ii++)
-                    for(jj=imdataview[viewindex].jjmin; jj<imdataview[viewindex].jjmax; jj++)
-                        imdataview[viewindex].computearray[jj*imXsize+ii] = imarray[imindex].array.F[jj*imXsize+ii];
+                for(ii=iimin; ii<iimax; ii++)
+                    for(jj=jjmin; jj<jjmax; jj++)
+                        imdataview[viewindex].computearray[jj*xsize+ii] = imarray[imindex].array.F[jj*xsize+ii];
                 break;
 
             case _DATATYPE_DOUBLE:
-                for(ii=imdataview[viewindex].iimin; ii<imdataview[viewindex].iimax; ii++)
-                    for(jj=imdataview[viewindex].jjmin; jj<imdataview[viewindex].jjmax; jj++)
-                        imdataview[viewindex].computearray[jj*imXsize+ii] = imarray[imindex].array.D[imid*imSize+jj*imXsize+ii];
+                for(ii=iimin; ii<iimax; ii++)
+                    for(jj=jjmin; jj<jjmax; jj++)
+                        imdataview[viewindex].computearray[jj*xsize+ii] = imarray[imindex].array.D[imid*xysize+jj*xsize+ii];
                 break;
 
             case _DATATYPE_UINT8:
-                for(ii=imdataview[viewindex].iimin; ii<imdataview[viewindex].iimax; ii++)
-                    for(jj=imdataview[viewindex].jjmin; jj<imdataview[viewindex].jjmax; jj++)
-                        imdataview[viewindex].computearray[jj*imXsize+ii] = (float) imarray[imindex].array.UI8[imid*imSize+jj*imXsize+ii];
+                for(ii=iimin; ii<iimax; ii++)
+                    for(jj=jjmin; jj<jjmax; jj++)
+                        imdataview[viewindex].computearray[jj*xsize+ii] = (float) imarray[imindex].array.UI8[imid*xysize+jj*xsize+ii];
                 break;
 
             case _DATATYPE_UINT16:
-                for(ii=imdataview[viewindex].iimin; ii<imdataview[viewindex].iimax; ii++)
-                    for(jj=imdataview[viewindex].jjmin; jj<imdataview[viewindex].jjmax; jj++)
-                        imdataview[viewindex].computearray[jj*imXsize+ii] = (float) imarray[imindex].array.UI16[imid*imSize+jj*imXsize+ii];
+                for(ii=iimin; ii<iimax; ii++)
+                    for(jj=jjmin; jj<jjmax; jj++)
+                        imdataview[viewindex].computearray[jj*xsize+ii] = (float) imarray[imindex].array.UI16[imid*xysize+jj*xsize+ii];
                 break;
 
             case _DATATYPE_UINT32:
-                for(ii=imdataview[viewindex].iimin; ii<imdataview[viewindex].iimax; ii++)
-                    for(jj=imdataview[viewindex].jjmin; jj<imdataview[viewindex].jjmax; jj++)
-                        imdataview[viewindex].computearray[jj*imXsize+ii] = (float) imarray[imindex].array.UI32[imid*imSize+jj*imXsize+ii];
+                for(ii=iimin; ii<iimax; ii++)
+                    for(jj=jjmin; jj<jjmax; jj++)
+                        imdataview[viewindex].computearray[jj*xsize+ii] = (float) imarray[imindex].array.UI32[imid*xysize+jj*xsize+ii];
                 break;
 
             case _DATATYPE_UINT64:
-                for(ii=imdataview[viewindex].iimin; ii<imdataview[viewindex].iimax; ii++)
-                    for(jj=imdataview[viewindex].jjmin; jj<imdataview[viewindex].jjmax; jj++)
-                        imdataview[viewindex].computearray[jj*imXsize+ii] = (float) imarray[imindex].array.UI64[imid*imSize+jj*imXsize+ii];
+                for(ii=iimin; ii<iimax; ii++)
+                    for(jj=jjmin; jj<jjmax; jj++)
+                        imdataview[viewindex].computearray[jj*xsize+ii] = (float) imarray[imindex].array.UI64[imid*xysize+jj*xsize+ii];
                 break;
 
 
             case _DATATYPE_INT8:
-                for(ii=imdataview[viewindex].iimin; ii<imdataview[viewindex].iimax; ii++)
-                    for(jj=imdataview[viewindex].jjmin; jj<imdataview[viewindex].jjmax; jj++)
-                        imdataview[viewindex].computearray[jj*imXsize+ii] = (float) imarray[imindex].array.SI8[imid*imSize+jj*imXsize+ii];
+                for(ii=iimin; ii<iimax; ii++)
+                    for(jj=jjmin; jj<jjmax; jj++)
+                        imdataview[viewindex].computearray[jj*xsize+ii] = (float) imarray[imindex].array.SI8[imid*xysize+jj*xsize+ii];
                 break;
 
             case _DATATYPE_INT16:
-                for(ii=imdataview[viewindex].iimin; ii<imdataview[viewindex].iimax; ii++)
-                    for(jj=imdataview[viewindex].jjmin; jj<imdataview[viewindex].jjmax; jj++)
-                        imdataview[viewindex].computearray[jj*imXsize+ii] = (float) imarray[imindex].array.SI16[imid*imSize+jj*imXsize+ii];
+                for(ii=iimin; ii<iimax; ii++)
+                    for(jj=jjmin; jj<jjmax; jj++)
+                        imdataview[viewindex].computearray[jj*xsize+ii] = (float) imarray[imindex].array.SI16[imid*xysize+jj*xsize+ii];
                 break;
 
             case _DATATYPE_INT32:
-                for(ii=imdataview[viewindex].iimin; ii<imdataview[viewindex].iimax; ii++)
-                    for(jj=imdataview[viewindex].jjmin; jj<imdataview[viewindex].jjmax; jj++)
-                        imdataview[viewindex].computearray[jj*imXsize+ii] = (float) imarray[imindex].array.SI32[imid*imSize+jj*imXsize+ii];
+                for(ii=iimin; ii<iimax; ii++)
+                    for(jj=jjmin; jj<jjmax; jj++)
+                        imdataview[viewindex].computearray[jj*xsize+ii] = (float) imarray[imindex].array.SI32[imid*xysize+jj*xsize+ii];
                 break;
 
             case _DATATYPE_INT64:
-                for(ii=imdataview[viewindex].iimin; ii<imdataview[viewindex].iimax; ii++)
-                    for(jj=imdataview[viewindex].jjmin; jj<imdataview[viewindex].jjmax; jj++)
-                        imdataview[viewindex].computearray[jj*imXsize+ii] = (float) imarray[imindex].array.SI64[imid*imSize+jj*imXsize+ii];
+                for(ii=iimin; ii<iimax; ii++)
+                    for(jj=jjmin; jj<jjmax; jj++)
+                        imdataview[viewindex].computearray[jj*xsize+ii] = (float) imarray[imindex].array.SI64[imid*xysize+jj*xsize+ii];
                 break;
             }
 
-if(verbose) {
-                       printf("------------ [%5d %s]\n", __LINE__, __FILE__);
-                       fflush(stdout);
-}
+            if(verbose) {
+                printf("------------ [%5d %s]\n", __LINE__, __FILE__);
+                fflush(stdout);
+            }
 
             // Recompute min and max scale if needed
             if(imdataview[viewindex].update_minmax == 1)
@@ -802,112 +864,144 @@ if(verbose) {
                 float *varray = NULL;
                 int nbpix;
 
-                nbpix = (imdataview[viewindex].iimax - imdataview[viewindex].iimin) * (imdataview[viewindex].jjmax - imdataview[viewindex].jjmin);
+                nbpix = (iimax - iimin) * (jjmax - jjmin);
+
+                if(verbose) {
+                    printf("------------ [%5d %s] nbpix = %d\n", __LINE__, __FILE__, nbpix);
+                    fflush(stdout);
+                }
 
                 varray = (float*) malloc(sizeof(float) * nbpix);
 
+
+                if(verbose) {
+                    printf("------------ [%5d %s] nbpix = %d\n", __LINE__, __FILE__, nbpix);
+                    fflush(stdout);
+                }
+
                 int pixindex = 0;
-                for(ii=imdataview[viewindex].iimin; ii<imdataview[viewindex].iimax; ii++)
-                    for(jj=imdataview[viewindex].jjmin; jj<imdataview[viewindex].jjmax; jj++)
+                for(ii=iimin; ii<iimax; ii++)
+                    for(jj=jjmin; jj<jjmax; jj++)
                     {
-                        varray[pixindex] = imdataview[viewindex].computearray[jj*imXsize+ii];
+                        varray[pixindex] = imdataview[viewindex].computearray[jj*xsize+ii];
                         pixindex ++;
                     }
 
                 qsort(varray, nbpix, sizeof(float), floatcompare);
 
-                int iimin = (int) (nbpix * imdataview[viewindex].scale_range_perc);
-                if(iimin < 0) {
-                    iimin = 0;
+                int iipixmin = (int) (nbpix * imdataview[viewindex].scale_range_perc);
+                if(iipixmin < 0) {
+                    iipixmin = 0;
                 }
 
-                int iimax = (int) (nbpix * (1.0-imdataview[viewindex].scale_range_perc));
-                if(iimax > nbpix-1) {
-                    iimax = nbpix -1;
+                int iipixmax = (int) (nbpix * (1.0-imdataview[viewindex].scale_range_perc));
+                if(iipixmax > nbpix-1) {
+                    iipixmax = nbpix -1;
                 }
 
-                imdataview[viewindex].vmin = varray[iimin];
-                imdataview[viewindex].vmax = varray[iimax];
+                imdataview[viewindex].vmin = varray[iipixmin];
+                imdataview[viewindex].vmax = varray[iipixmax];
 
                 free(varray);
-                
+
                 imdataview[viewindex].update_minmax = 0;
             }
 
 
-			if(verbose) {
-                        printf("------------ [%5d %s]\n", __LINE__, __FILE__);
-                       fflush(stdout);
-				   }
+            if(verbose) {
+                printf("------------ [%5d %s]\n", __LINE__, __FILE__);
+                fflush(stdout);
+            }
 
 
             // compute R, G, B values
-            for (ii=0; ii<imYsize*imXsize; ii++)
+            for (ii=0; ii<xysize; ii++)
             {
                 Rarray[ii] = 0;
                 Garray[ii] = 0;
                 Barray[ii] = 0;
             }
-            for(jj=imdataview[viewindex].jjmin; jj<imdataview[viewindex].jjmax; jj++)
-                for(ii=imdataview[viewindex].iimin; ii<imdataview[viewindex].iimax; ii++)
+            for(jj=jjmin; jj<jjmax; jj++)
+                for(ii=iimin; ii<iimax; ii++)
                 {
                     float pixval;
                     int pixindex;
 
-                    pixindex = jj*imXsize+ii;
+                    pixindex = jj*xsize+ii;
                     pixval = imdataview[viewindex].computearray[pixindex];
                     pixval = (pixval - imdataview[viewindex].vmin) / (imdataview[viewindex].vmax - imdataview[viewindex].vmin);
                     imdataview[viewindex].computearray[pixindex] = pixval;
                     imdataview[viewindex].computearray16[pixindex] = (uint16_t) (pixval*65535);
                     if(pixval<0.0) {
-						imdataview[viewindex].computearray16[pixindex] = 0;
-					}
-					if(pixval >= 1.0) {
-						imdataview[viewindex].computearray16[pixindex] = 65535;
-					}
+                        imdataview[viewindex].computearray16[pixindex] = 0;
+                    }
+                    if(pixval >= 1.0) {
+                        imdataview[viewindex].computearray16[pixindex] = 65535;
+                    }
                 }
 
 
 
-			if(verbose) {
-                        printf("------------ [%5d %s]\n", __LINE__, __FILE__);
-                       fflush(stdout);
-				   }
+            if(verbose) {
+                printf("------------ [%5d %s]\n", __LINE__, __FILE__);
+                fflush(stdout);
+            }
 
-			// apply colormap
-			
-            for(jj=imdataview[viewindex].jjmin; jj<imdataview[viewindex].jjmax; jj++)
-                for(ii=imdataview[viewindex].iimin; ii<imdataview[viewindex].iimax; ii++)
+            // apply colormap
+
+            for(jj=jjmin; jj<jjmax; jj++)
+                for(ii=iimin; ii<iimax; ii++)
                 {
-                    float pixval;
                     int pixindex;
 
-                    pixindex = jj*imXsize+ii;
-                    pixval = imdataview[viewindex].computearray[pixindex];
+                    pixindex = jj*xsize+ii;
                     uint16_t pixval16 = imdataview[viewindex].computearray16[pixindex];
-                    
+
                     Rarray[pixindex] = imdataview[viewindex].COLORMAP_RVAL[pixval16];
                     Garray[pixindex] = imdataview[viewindex].COLORMAP_GVAL[pixval16];
                     Barray[pixindex] = imdataview[viewindex].COLORMAP_BVAL[pixval16];
-                    
+
                     //PixVal_to_RGB( pixval, &Rarray[pixindex], &Garray[pixindex], &Barray[pixindex]);
                 }
 
 
             if(verbose) {
-                printf("------------ [%5d %s]  viewXsize = %d  viewYsize = %d\n", __LINE__, __FILE__, viewXsize, viewYsize);
+                printf("------------ [%5d %s]  xviewsize = %d  yviewsize = %d\n", __LINE__, __FILE__, xviewsize, yviewsize);
                 fflush(stdout);
             }
 
-			// push to view - this is where mapping occurs
 
-            for(int xview = imdataview[viewindex].xviewmin; xview < imdataview[viewindex].xviewmax; xview++)
-                for(int yview = imdataview[viewindex].yviewmin; yview < imdataview[viewindex].yviewmax; yview++)
+
+            // push to view - this is where mapping occurs
+
+			// compute valid xview and yview range
+			
+			int xviewmin = 0;
+			if(imdataview[viewindex].xviewmin > xviewmin) {
+				iimin = imdataview[viewindex].xviewmin;
+			}
+			int xviewmax = imdataview[viewindex].xviewsize;
+			if(imdataview[viewindex].xviewmax < xviewmax) {
+				xviewmax = imdataview[viewindex].xviewmax;
+			}
+			int yviewmin = 0;
+			if(imdataview[viewindex].yviewmin > yviewmin) {
+				yviewmin = imdataview[viewindex].yviewmin;
+			}
+			int yviewmax = imdataview[viewindex].yviewsize;
+			if(imdataview[viewindex].yviewmax < yviewmax) {
+				yviewmax = imdataview[viewindex].yviewmax;
+			}
+
+
+
+            for(int xview = xviewmin; xview < xviewmax; xview++)
+                for(int yview = yviewmin; yview < yviewmax; yview++)
                 {
-                    int pixindexView = yview * viewXsize + xview;
+                    int pixindexView = yview * xviewsize + xview;
 
-                    long pixindexRaw = imdataview[viewindex].PixelRaw_array[pixindexView];
-                    int pixindexPb = imdataview[viewindex].PixelBuff_array[pixindexView];
+                    long pixindexRaw = imdataview[viewindex].PixelIndexRaw_array[pixindexView];
+                    int pixindexPb = imdataview[viewindex].PixelIndexViewBuff_array[pixindexView];
 
                     // if(pixindex != -1) {
 
@@ -937,7 +1031,7 @@ if(verbose) {
             }
 
             gtk_image_set_from_pixbuf(GTK_IMAGE(widgets->w_img_main), imdataview[viewindex].pbview);
-            
+
             if(verbose) {
                 printf("------------ [%5d %s]\n", __LINE__, __FILE__);
                 fflush(stdout);

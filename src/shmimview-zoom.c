@@ -53,12 +53,12 @@ void on_zoombin4_toggled(
         }
         imdataview[viewindex].zoomFact = 0.25;
         resize_PixelBufferView(
-            imdataview[viewindex].xsizedisp/4,
-            imdataview[viewindex].ysizedisp/4);
+            imdataview[viewindex].xsize/4,
+            imdataview[viewindex].ysize/4);
         imdataview[viewindex].xviewmin = 0;
-        imdataview[viewindex].xviewmax = imdataview[viewindex].viewXsize;
+        imdataview[viewindex].xviewmax = imdataview[viewindex].xviewsize;
         imdataview[viewindex].yviewmin = 0;
-        imdataview[viewindex].yviewmax = imdataview[viewindex].viewYsize;
+        imdataview[viewindex].yviewmax = imdataview[viewindex].yviewsize;
 
         imdataview[viewindex].update = 1;
     }
@@ -79,12 +79,12 @@ void on_zoombin2_toggled(
         }
         imdataview[viewindex].zoomFact = 0.5;
         resize_PixelBufferView(
-            imdataview[viewindex].xsizedisp/2,
-            imdataview[viewindex].ysizedisp/2);
+            imdataview[viewindex].xsize/2,
+            imdataview[viewindex].ysize/2);
         imdataview[viewindex].xviewmin = 0;
-        imdataview[viewindex].xviewmax = imdataview[viewindex].viewXsize;
+        imdataview[viewindex].xviewmax = imdataview[viewindex].xviewsize;
         imdataview[viewindex].yviewmin = 0;
-        imdataview[viewindex].yviewmax = imdataview[viewindex].viewYsize;
+        imdataview[viewindex].yviewmax = imdataview[viewindex].yviewsize;
 
         imdataview[viewindex].update = 1;
     }
@@ -103,12 +103,12 @@ void on_zoom1_toggled(
         }
         imdataview[viewindex].zoomFact = 1;
         resize_PixelBufferView(
-            imdataview[viewindex].xsizedisp,
-            imdataview[viewindex].ysizedisp);
+            imdataview[viewindex].xsize,
+            imdataview[viewindex].ysize);
         imdataview[viewindex].xviewmin = 0;
-        imdataview[viewindex].xviewmax = imdataview[viewindex].viewXsize;
+        imdataview[viewindex].xviewmax = imdataview[viewindex].xviewsize;
         imdataview[viewindex].yviewmin = 0;
-        imdataview[viewindex].yviewmax = imdataview[viewindex].viewYsize;
+        imdataview[viewindex].yviewmax = imdataview[viewindex].yviewsize;
 
         imdataview[viewindex].update = 1;
     }
@@ -127,12 +127,12 @@ void on_zoom2_toggled(
         }
         imdataview[viewindex].zoomFact = 2;
         resize_PixelBufferView(
-            2*imdataview[viewindex].xsizedisp,
-            2*imdataview[viewindex].ysizedisp);
+            2*imdataview[viewindex].xsize,
+            2*imdataview[viewindex].ysize);
         imdataview[viewindex].xviewmin = 0;
-        imdataview[viewindex].xviewmax = imdataview[viewindex].viewXsize;
+        imdataview[viewindex].xviewmax = imdataview[viewindex].xviewsize;
         imdataview[viewindex].yviewmin = 0;
-        imdataview[viewindex].yviewmax = imdataview[viewindex].viewYsize;
+        imdataview[viewindex].yviewmax = imdataview[viewindex].yviewsize;
 
         imdataview[viewindex].update = 1;
     }
@@ -151,12 +151,12 @@ void on_zoom4_toggled(
         }
         imdataview[viewindex].zoomFact = 4;
         resize_PixelBufferView(
-            4*imdataview[viewindex].xsizedisp,
-            4*imdataview[viewindex].ysizedisp);
+            4*imdataview[viewindex].xsize,
+            4*imdataview[viewindex].ysize);
         imdataview[viewindex].xviewmin = 0;
-        imdataview[viewindex].xviewmax = imdataview[viewindex].viewXsize;
+        imdataview[viewindex].xviewmax = imdataview[viewindex].xviewsize;
         imdataview[viewindex].yviewmin = 0;
-        imdataview[viewindex].yviewmax = imdataview[viewindex].viewYsize;
+        imdataview[viewindex].yviewmax = imdataview[viewindex].yviewsize;
 
         imdataview[viewindex].update = 1;
     }
@@ -175,12 +175,12 @@ void on_zoom8_toggled(
         }
         imdataview[viewindex].zoomFact = 8;
         resize_PixelBufferView(
-            8*imdataview[viewindex].xsizedisp,
-            8*imdataview[viewindex].ysizedisp);
+            8*imdataview[viewindex].xsize,
+            8*imdataview[viewindex].ysize);
         imdataview[viewindex].xviewmin = 0;
-        imdataview[viewindex].xviewmax = imdataview[viewindex].viewXsize;
+        imdataview[viewindex].xviewmax = imdataview[viewindex].xviewsize;
         imdataview[viewindex].yviewmin = 0;
-        imdataview[viewindex].yviewmax = imdataview[viewindex].viewYsize;
+        imdataview[viewindex].yviewmax = imdataview[viewindex].yviewsize;
 
         imdataview[viewindex].update = 1;
     }

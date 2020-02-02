@@ -48,35 +48,19 @@ int viewWindow_check_values()
         imdataview[viewindex].yviewmin = 0;
 
 
-    if( imdataview[viewindex].xviewmax > imdataview[viewindex].viewXsize )
-        imdataview[viewindex].xviewmax = imdataview[viewindex].viewXsize;
+    if( imdataview[viewindex].xviewmax > imdataview[viewindex].xviewsize )
+        imdataview[viewindex].xviewmax = imdataview[viewindex].xviewsize;
 
-    if( imdataview[viewindex].yviewmax > imdataview[viewindex].viewYsize )
-        imdataview[viewindex].yviewmax = imdataview[viewindex].viewYsize;
-
-
-
-    if( imdataview[viewindex].iimindisp < 0 )
-        imdataview[viewindex].iimindisp = 0;
-
-    if( imdataview[viewindex].jjmindisp < 0 )
-        imdataview[viewindex].jjmindisp = 0;
-
-
-    if( imdataview[viewindex].iimaxdisp > imdataview[viewindex].xsizedisp )
-        imdataview[viewindex].iimaxdisp = imdataview[viewindex].xsizedisp;
-
-    if( imdataview[viewindex].jjmaxdisp > imdataview[viewindex].ysizedisp )
-        imdataview[viewindex].jjmaxdisp = imdataview[viewindex].ysizedisp;
-
+    if( imdataview[viewindex].yviewmax > imdataview[viewindex].yviewsize )
+        imdataview[viewindex].yviewmax = imdataview[viewindex].yviewsize;
 
 
     // Recompute zoom
 
     float zfactX, zfactY;
 
-    zfactX = 1.0*(imdataview[viewindex].iimaxdisp - imdataview[viewindex].iimindisp) / (imdataview[viewindex].xviewmax - imdataview[viewindex].xviewmin);
-    zfactY = 1.0*(imdataview[viewindex].jjmaxdisp - imdataview[viewindex].jjmindisp) / (imdataview[viewindex].yviewmax - imdataview[viewindex].yviewmin);
+    zfactX = 1.0*(imdataview[viewindex].iimax - imdataview[viewindex].iimin) / (imdataview[viewindex].xviewmax - imdataview[viewindex].xviewmin);
+    zfactY = 1.0*(imdataview[viewindex].jjmax - imdataview[viewindex].jjmin) / (imdataview[viewindex].yviewmax - imdataview[viewindex].yviewmin);
 
 
     if(zfactX>zfactY)
@@ -184,12 +168,12 @@ gboolean on_imgareaeventbox_scroll_event(
 
 
     resize_PixelBufferView(
-        (int) (imdataview[viewindex].xsizedisp*imdataview[viewindex].zoomFact),
-        (int) (imdataview[viewindex].ysizedisp*imdataview[viewindex].zoomFact));
+        (int) (imdataview[viewindex].xsize*imdataview[viewindex].zoomFact),
+        (int) (imdataview[viewindex].ysize*imdataview[viewindex].zoomFact));
     imdataview[viewindex].xviewmin = 0;
-    imdataview[viewindex].xviewmax = imdataview[viewindex].viewXsize;
+    imdataview[viewindex].xviewmax = imdataview[viewindex].xviewsize;
     imdataview[viewindex].yviewmin = 0;
-    imdataview[viewindex].yviewmax = imdataview[viewindex].viewYsize;
+    imdataview[viewindex].yviewmax = imdataview[viewindex].yviewsize;
 
     imdataview[viewindex].update = 1;
 
@@ -214,8 +198,8 @@ gboolean on_img_main_size_allocate(
     }
     int viewindex = 0;
 
-    imdataview[viewindex].viewXsize = allocation->width;
-    imdataview[viewindex].viewYsize = allocation->height;
+    imdataview[viewindex].xviewsize = allocation->width;
+    imdataview[viewindex].yviewsize = allocation->height;
 
     return TRUE;
 }
@@ -311,8 +295,8 @@ gboolean on_imgareaeventbox_motion_notify_event(
     pixXpos = event->x;
     pixYpos = event->y;
 
-    float offsetx =  0.5 * (imdataview[viewindex].eventbox_xsize - imdataview[viewindex].viewXsize);
-    float offsety =  0.5 * (imdataview[viewindex].eventbox_ysize - imdataview[viewindex].viewYsize);
+    float offsetx =  0.5 * (imdataview[viewindex].eventbox_xsize - imdataview[viewindex].xviewsize);
+    float offsety =  0.5 * (imdataview[viewindex].eventbox_ysize - imdataview[viewindex].yviewsize);
 
     if(offsetx < 0.0) {
         offsetx = 0.0;
@@ -338,10 +322,10 @@ gboolean on_imgareaeventbox_motion_notify_event(
         int imindex = imdataview[viewindex].imindex;
         int imindexdisp = imdataview[viewindex].dispmap_imindex;
 
-        if( (ii>-1) && (ii<imdataview[viewindex].xsizedisp) && (jj>-1) && (jj<imdataview[viewindex].ysizedisp)) {
+        if( (ii>-1) && (ii<imdataview[viewindex].xsize) && (jj>-1) && (jj<imdataview[viewindex].ysize)) {
             if(imdataview[viewindex].dispmap == 1)
             {
-                int zone = imarray[imindexdisp].array.SI32[jj*imdataview[viewindex].xsizedisp+ii];
+                int zone = imarray[imindexdisp].array.SI32[jj*imdataview[viewindex].xsize+ii];
 
                 switch ( imarray[imindex].md[0].datatype )
                 {
@@ -539,8 +523,8 @@ gboolean on_imgareaeventbox_motion_notify_event(
             printf("BT3 VECTOR : %f %f\n", dx, dy);
         }
 
-        imdataview[viewindex].bscale_center = imdataview[viewindex].bscale_center_ref + dx / imdataview[viewindex].viewXsize;
-        imdataview[viewindex].bscale_slope = imdataview[viewindex].bscale_slope_ref + dy / imdataview[viewindex].viewYsize;
+        imdataview[viewindex].bscale_center = imdataview[viewindex].bscale_center_ref + dx / imdataview[viewindex].xviewsize;
+        imdataview[viewindex].bscale_slope = imdataview[viewindex].bscale_slope_ref + dy / imdataview[viewindex].yviewsize;
         imdataview[viewindex].update = 1;
     }
 
