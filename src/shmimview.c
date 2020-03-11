@@ -323,6 +323,7 @@ int main(int argc, char *argv[])
     char shmdirname[200];
     get_shmimdir(shmdirname);
     strcpy(SHARED_MEMORY_DIRECTORY, shmdirname);
+    printf("Using shmdir %s\n", shmdirname);
 
     context = g_option_context_new ("- view milk shared memory image stream");
             
