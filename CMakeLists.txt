@@ -114,7 +114,7 @@ add_compile_options(-pipe)
 
 
 
-ADD_EXECUTABLE(shmimview
+ADD_EXECUTABLE(shmimv
 src/shmimview.c src/shmimview-view.c src/shmimview-scale.c src/shmimview-zoom.c src/shmimview-process.c shmimview-ui.c)
 
 
@@ -127,9 +127,9 @@ set(LIBS ${LIBS} ${GTK_LIBRARIES})
 set(LIBS ${LIBS} ImageStreamIO)
 
 
-target_link_libraries(shmimview ${LIBS} m)
+target_link_libraries(shmimv ${LIBS} m)
 
 
 message("LIBS : ${LIBS}")
 
-install(TARGETS shmimview DESTINATION bin)
+install(TARGETS shmimv DESTINATION bin)
