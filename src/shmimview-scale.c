@@ -7,8 +7,8 @@
 #include <gtk/gtk.h>
 
 
-#include "ImageStruct.h"
-#include "ImageStreamIO.h"
+#include "ImageStreamIO/ImageStruct.h"
+#include "ImageStreamIO/ImageStreamIO.h"
 
 
 #include "shmimview.h"

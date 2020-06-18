@@ -9,9 +9,10 @@
 #include <glib/gi18n.h>
 #include <locale.h>
 #include <errno.h>
+#include <assert.h>
 
-#include "ImageStruct.h"
-#include "ImageStreamIO.h"
+#include "ImageStreamIO/ImageStruct.h"
+#include "ImageStreamIO/ImageStreamIO.h"
 
 #include "Config.h"
 
@@ -58,14 +59,15 @@ int precompute_cmap()
     int NBlevel = 65536;
 
     cmapdata.NBlevel = NBlevel; // 16 bit
+    
     int viewindex = 0;
 
 
     // GREY (default)
     if ( cmapdata.colormapinit == 0 ) {
-        cmapdata.COLORMAP_GREY_RVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
-        cmapdata.COLORMAP_GREY_GVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
-        cmapdata.COLORMAP_GREY_BVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);        
+        cmapdata.COLORMAP_GREY_RVAL = (unsigned char *) malloc(sizeof(char) * NBlevel);
+        cmapdata.COLORMAP_GREY_GVAL = (unsigned char *) malloc(sizeof(char) * NBlevel);
+        cmapdata.COLORMAP_GREY_BVAL = (unsigned char *) malloc(sizeof(char) * NBlevel);        
     }
     for(int clevel=0; clevel<NBlevel; clevel++) {
         float pixval = 1.0*clevel/NBlevel;
@@ -81,9 +83,9 @@ int precompute_cmap()
 
     // COOL
     if ( cmapdata.colormapinit == 0 ) {
-        cmapdata.COLORMAP_COOL_RVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
-        cmapdata.COLORMAP_COOL_GVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
-        cmapdata.COLORMAP_COOL_BVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);        
+        cmapdata.COLORMAP_COOL_RVAL = (unsigned char *) malloc(sizeof(char) * NBlevel);
+        cmapdata.COLORMAP_COOL_GVAL = (unsigned char *) malloc(sizeof(char) * NBlevel);
+        cmapdata.COLORMAP_COOL_BVAL = (unsigned char *) malloc(sizeof(char) * NBlevel);        
     }
     for(int clevel=0; clevel<NBlevel; clevel++) {
         float pixval = 1.0*clevel/NBlevel;
@@ -99,9 +101,9 @@ int precompute_cmap()
 
     // HEAT
     if ( cmapdata.colormapinit == 0 ) {
-        cmapdata.COLORMAP_HEAT_RVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
-        cmapdata.COLORMAP_HEAT_GVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
-        cmapdata.COLORMAP_HEAT_BVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);        
+        cmapdata.COLORMAP_HEAT_RVAL = (unsigned char *) malloc(sizeof(char) * NBlevel);
+        cmapdata.COLORMAP_HEAT_GVAL = (unsigned char *) malloc(sizeof(char) * NBlevel);
+        cmapdata.COLORMAP_HEAT_BVAL = (unsigned char *) malloc(sizeof(char) * NBlevel);        
     }
     for(int clevel=0; clevel<NBlevel; clevel++) {
         float pixval = 1.0*clevel/NBlevel;
@@ -118,9 +120,9 @@ int precompute_cmap()
 
     // BRY
     if ( cmapdata.colormapinit == 0 ) {
-        cmapdata.COLORMAP_BRY_RVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
-        cmapdata.COLORMAP_BRY_GVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
-        cmapdata.COLORMAP_BRY_BVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);        
+        cmapdata.COLORMAP_BRY_RVAL = (unsigned char *) malloc(sizeof(char) * NBlevel);
+        cmapdata.COLORMAP_BRY_GVAL = (unsigned char *) malloc(sizeof(char) * NBlevel);
+        cmapdata.COLORMAP_BRY_BVAL = (unsigned char *) malloc(sizeof(char) * NBlevel);        
     }    
     float xlim = 0.25;
     for(int clevel=0; clevel<NBlevel; clevel++) {
@@ -147,9 +149,9 @@ int precompute_cmap()
 
     // RGB
     if ( cmapdata.colormapinit == 0 ) {
-        cmapdata.COLORMAP_RGB_RVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
-        cmapdata.COLORMAP_RGB_GVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);
-        cmapdata.COLORMAP_RGB_BVAL = (unsigned char *) malloc(sizeof(unsigned char) * NBlevel);        
+        cmapdata.COLORMAP_RGB_RVAL = (unsigned char *) malloc(sizeof(char) * NBlevel);
+        cmapdata.COLORMAP_RGB_GVAL = (unsigned char *) malloc(sizeof(char) * NBlevel);
+        cmapdata.COLORMAP_RGB_BVAL = (unsigned char *) malloc(sizeof(char) * NBlevel);        
     }    
     for(int clevel=0; clevel<NBlevel; clevel++) {
         float pixval = 1.0*clevel/NBlevel;
@@ -376,12 +378,14 @@ int main(int argc, char *argv[])
 	// initialize color maps
 	cmapdata.colormapinit = 0;
     precompute_cmap();
+	cmapdata.NBlevel = 65536;
+
 
     for(int i=0; i<NB_IMDATAVIEW_MAX; i++) {
         // colormap
-        imdataview[i].COLORMAP_RVAL = (unsigned char*) malloc(sizeof(unsigned char)*cmapdata.NBlevel);
-        imdataview[i].COLORMAP_GVAL = (unsigned char*) malloc(sizeof(unsigned char)*cmapdata.NBlevel);
-        imdataview[i].COLORMAP_BVAL = (unsigned char*) malloc(sizeof(unsigned char)*cmapdata.NBlevel);
+        imdataview[i].COLORMAP_RVAL = (unsigned char*) malloc(cmapdata.NBlevel);
+        imdataview[i].COLORMAP_GVAL = (unsigned char*) malloc(cmapdata.NBlevel);
+        imdataview[i].COLORMAP_BVAL = (unsigned char*) malloc(cmapdata.NBlevel);
         
         for(int l= 0; l< cmapdata.NBlevel; l++) {
         imdataview[i].COLORMAP_RVAL[l] = cmapdata.COLORMAP_GREY_RVAL[l];

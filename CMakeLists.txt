@@ -69,6 +69,12 @@ FIND_PACKAGE(PkgConfig REQUIRED)
 PKG_CHECK_MODULES(GTK REQUIRED gtk+-3.0)
 
 
+# FIND MILK
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(MILK REQUIRED milk>=1.01.02)
+link_directories(${MILK_LIBRARY_DIRS})
+include_directories(${MILK_INCLUDE_DIRS})
+message("MILK_VERSION = ${MILK_VERSION}")
 
 
 # =======================================
@@ -76,16 +82,16 @@ PKG_CHECK_MODULES(GTK REQUIRED gtk+-3.0)
 # =======================================
 
 # Set Release build flags
-set(CMAKE_C_FLAGS_DEBUG     "-O0 -g -Wall -Wextra -rdynamic")
+set(CMAKE_C_FLAGS_DEBUG     "-O0 -g -Wall -Wextra -rdynamic -fanalyzer")
 
 # Set Release build flags
-set(CMAKE_C_FLAGS_RELEASE     "-Ofast -DNDEBUG -rdynamic")
+# cmake -DCMAKE_BUILD_TYPE=Debug
+set(CMAKE_C_FLAGS_RELEASE     "-Ofast -DNDEBUG -rdynamic ")
 
 
 
 # Set Release build flags
-#set(CMAKE_C_FLAGS_RELEASE     "-Ofast -DNDEBUG -rdynamic")
-#SET(CMAKE_C_FLAGS "-g -O2 -Wall -Wextra -rdynamic")
+
 
 # Set a default build type if none was specified
 set(default_build_type "Release")
@@ -115,7 +121,13 @@ add_compile_options(-pipe)
 
 
 ADD_EXECUTABLE(shmimv
-src/shmimview.c src/shmimview-view.c src/shmimview-scale.c src/shmimview-zoom.c src/shmimview-process.c shmimview-ui.c)
+	src/shmimview.c 
+	src/shmimview-view.c 
+	src/shmimview-scale.c 
+	src/shmimview-zoom.c 
+	src/shmimview-process.c 
+	shmimview-ui.c
+)
 
 
 
