@@ -1,11 +1,7 @@
 # Example, run from _build directory :
-#
-#
 # 
 # cmake ..
 # cmake .. -DCMAKE_INSTALL_PREFIX=../_install
-#
-#
 #
 # BUILD TYPE
 # ===============================
@@ -14,8 +10,6 @@
 #
 # Release build type turns on optimization flags
 # cmake -DCMAKE_BUILD_TYPE=Release ..
-#
-#
 #
 #
 # COMPILING
@@ -74,8 +68,9 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(MILK REQUIRED milk>=1.01.02)
 link_directories(${MILK_LIBRARY_DIRS})
 include_directories(${MILK_INCLUDE_DIRS})
-message("MILK_VERSION = ${MILK_VERSION}")
-
+message("MILK_VERSION      = ${MILK_VERSION}")
+message("MILK_LIBRARY_DIRS = ${MILK_LIBRARY_DIRS}")
+set(CMAKE_INSTALL_RPATH "${MILK_LIBRARY_DIRS}")
 
 # =======================================
 # PERFORMANCE ORIENTED COMPILING OPTIONS
@@ -137,10 +132,9 @@ set(LIBS ${LIBS} ${GTK_LIBRARIES})
 
 # add ImageStreamIO
 set(LIBS ${LIBS} ImageStreamIO)
-
-
 target_link_libraries(shmimv ${LIBS} m)
 
+#set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 message("LIBS : ${LIBS}")
 
